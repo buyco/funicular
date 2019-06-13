@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/buyco/funicular/internal/utils"
 	"github.com/buyco/funicular/pkg/clients"
+	"github.com/buyco/funicular/pkg/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/go-redis/redis"
@@ -14,10 +14,10 @@ import (
 )
 
 const ENV_DIR = "../../.env"
-const STREAM = "intra-new-outbound-vgm"
+const STREAM = "example-stream"
 const CONSUMER_NAME = STREAM + "-consumer"
-const BUCKET_NAME = "development-buyco-app-uploads"
-const STORE_PATH = "/outbound/test/"
+const BUCKET_NAME = "buyco-foo-bar"
+const STORE_PATH = "/foo/bar/"
 
 func main() {
 	utils.LoadEnvFile(ENV_DIR, os.Getenv("ENV"))

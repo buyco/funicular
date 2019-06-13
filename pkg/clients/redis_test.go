@@ -1,8 +1,8 @@
 package clients_test
 
 import (
-	"github.com/buyco/funicular/internal/utils"
 	. "github.com/buyco/funicular/pkg/clients"
+	"github.com/buyco/funicular/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

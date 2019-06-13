@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/buyco/funicular/internal/utils"
 	"github.com/buyco/funicular/pkg/clients"
+	"github.com/buyco/funicular/pkg/utils"
 
 	"fmt"
 	"github.com/pkg/sftp"
@@ -15,9 +15,9 @@ import (
 )
 
 const ENV_DIR = "../../.env"
-const STREAM = "intra-new-outbound-vgm"
+const STREAM = "example-stream"
 const CONSUMER_NAME = STREAM + "-consumer"
-const OUTBOUND_VGM_DIR = "./outbound/vgm/"
+const SFTP_DIR = "./foo/bar/"
 
 func main() {
 	utils.LoadEnvFile(ENV_DIR, os.Getenv("ENV"))
@@ -25,15 +25,15 @@ func main() {
 	fileChan := make(chan map[string]interface{})
 	go func() {
 		var port uint32
-		if portInt, err := strconv.Atoi(os.Getenv("INTRA_PORT")); err == nil {
+		if portInt, err := strconv.Atoi(os.Getenv("SFTP_PORT")); err == nil {
 			port = uint32(portInt)
 		}
 		sftpManager := clients.NewSFTPManager(
-			os.Getenv("INTRA_HOST"),
+			os.Getenv("SFTP_HOST"),
 			port,
 			clients.NewSSHConfig(
-				os.Getenv("INTRA_USER"),
-				os.Getenv("INTRA_PASSWORD"),
+				os.Getenv("SFTP_USER"),
+				os.Getenv("SFTP_PASSWORD"),
 			),
 		)
 		sftpConn, err := sftpManager.AddClient()
@@ -49,7 +49,7 @@ func main() {
 
 		tmpReadFiles := make([]os.FileInfo, 0)
 		for {
-			dir, err := sftpConn.Client.ReadDir(OUTBOUND_VGM_DIR)
+			dir, err := sftpConn.Client.ReadDir(SFTP_DIR)
 			if err != nil {
 				log.Fatalf("Cannot read dir #%v", err)
 			}
@@ -58,7 +58,7 @@ func main() {
 
 				for _, file := range dir {
 					if !stringInSlice(file.Name(), tmpReadFiles) {
-						fHandler, err := sftpConn.Client.Open(OUTBOUND_VGM_DIR + file.Name())
+						fHandler, err := sftpConn.Client.Open(SFTP_DIR + file.Name())
 						if err != nil {
 							log.Printf("Cannot read file %s #%v", file.Name(), err)
 						} else {

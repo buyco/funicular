@@ -1,10 +1,10 @@
 package utils_test
 
 import (
+	. "github.com/buyco/funicular/pkg/utils"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	. "github.com/buyco/funicular/internal/utils"
 )
 
 var _ = Describe("Error", func() {

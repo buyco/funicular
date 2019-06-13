@@ -50,8 +50,8 @@ type S3Manager struct {
 
 func NewS3Manager(session *session.Session) *S3Manager {
 	return &S3Manager{
-		client:  NewS3Client(session),
-		S3:      make([]StorageAccessLayer, 0),
+		client: NewS3Client(session),
+		S3:     make([]StorageAccessLayer, 0),
 	}
 }
 
@@ -61,7 +61,6 @@ func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 
 	return s3Wrapper
 }
-
 
 //------------------------------------------------------------------------------
 

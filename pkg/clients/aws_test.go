@@ -1,10 +1,11 @@
 package clients_test
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/awstesting/mock"
 	"github.com/buyco/funicular/internal/mock_clients"
 	. "github.com/buyco/funicular/pkg/clients"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/awstesting/mock"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -87,7 +88,7 @@ var _ = Describe("Aws", func() {
 
 		var (
 			mockCtrl *gomock.Controller
-			mockS3 *mock_clients.MockStorageAccessLayer
+			mockS3   *mock_clients.MockStorageAccessLayer
 		)
 
 		BeforeEach(func() {
