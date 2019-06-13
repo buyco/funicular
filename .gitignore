@@ -10,3 +10,14 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# JetBrains
+.idea
+
+# Go Binaries and vendors
+examples/sftp_app/sftp_app
+examples/s3_app/s3_app
+vendor
+
+# Env files
+.env

@@ -1,0 +1,25 @@
+language: go
+
+go:
+  - 1.11.x
+  - 1.12.x
+  - gotip
+
+addons:
+  apt:
+    packages:
+      - redis-server
+
+env:
+  global:
+    - GO111MODULE=on
+    - REDIS_HOST=localhost
+    - REDIS_PORT=6379 REDIS_DB=1
+
+install:
+  - go get ./...
+  - go get github.com/onsi/gomega
+  - go install github.com/onsi/ginkgo/ginkgo
+  - export PATH=$PATH:$HOME/gopath/bin
+
+script: $HOME/gopath/bin/ginkgo -r --randomizeAllSpecs --randomizeSuites --race --trace
