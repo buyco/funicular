@@ -12,8 +12,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-
-	//. "github.com/jvshahid/mock4go"
 )
 
 var _ = Describe("Aws", func() {

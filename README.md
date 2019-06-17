@@ -1,5 +1,5 @@
 # Funicular
-[![GoDoc](https://godoc.org/github.com/buyco/funicular?status.svg)](http://godoc.org/github.com/buyco/funicular) [![Build Status](https://travis-ci.com/buyco/funicular.svg?branch=master)](https://travis-ci.com/buyco/funicular) [![license](https://img.shields.io/github/license/buyco/funicular.svg?maxAge=2592000)](https://github.com/buyco/funicular/LICENSE)
+[![GoDoc](https://godoc.org/github.com/buyco/funicular?status.svg)](http://godoc.org/github.com/buyco/funicular) [![Build Status](https://travis-ci.com/buyco/funicular.svg?branch=master)](https://travis-ci.com/buyco/funicular) [![codecov](https://codecov.io/gh/buyco/funicular/branch/master/graph/badge.svg)](https://codecov.io/gh/buyco/funicular) [![license](https://img.shields.io/github/license/buyco/funicular.svg?maxAge=2592000)](https://github.com/buyco/funicular/LICENSE)
 
 ###### 01000110 01010101 01001110 01001001 01000011 01010101 01001100 01000001 01010010
 

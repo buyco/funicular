@@ -4,6 +4,8 @@ import (
 	"github.com/buyco/funicular/internal/utils"
 	. "github.com/buyco/funicular/pkg/clients"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"os"
 	"strconv"
 	"time"

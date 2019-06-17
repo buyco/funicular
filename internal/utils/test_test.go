@@ -1,6 +1,10 @@
 package utils_test
 
 import (
+	. "github.com/buyco/funicular/internal/utils"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"fmt"
 )
 

@@ -22,4 +22,8 @@ install:
   - go install github.com/onsi/ginkgo/ginkgo
   - export PATH=$PATH:$HOME/gopath/bin
 
-script: $HOME/gopath/bin/ginkgo -r --randomizeAllSpecs --randomizeSuites --race --trace
+script: $HOME/gopath/bin/ginkgo -r --randomizeAllSpecs --randomizeSuites --race --trace --cover
+
+after_success:
+  - bash format_coverage.sh
+  - bash <(curl -s https://codecov.io/bash) || echo "codecov send failed"
