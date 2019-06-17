@@ -1,12 +1,5 @@
 package utils_test
 
-import (
-	. "github.com/buyco/funicular/pkg/utils"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-)
-
 var _ = Describe("Error", func() {
 
 	It("should create error with variables args", func() {

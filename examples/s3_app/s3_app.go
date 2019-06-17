@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/buyco/funicular/internal/utils"
 	"github.com/buyco/funicular/pkg/clients"
-	"github.com/buyco/funicular/pkg/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/go-redis/redis"
