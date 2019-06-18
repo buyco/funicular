@@ -58,11 +58,16 @@ func (rw *RedisManager) GetCategories() (clientsCat []string) {
 
 func (rw *RedisManager) Close() error {
 	var manageClientsCopy map[string][]*RedisWrapper
+	var err error
 	manageClientsCopy = copyRedisClients(rw.Clients)
 	if len(manageClientsCopy) > 0 {
 		for category, clients := range manageClientsCopy {
 			for _, client := range clients {
-				err := client.Close()
+				if client.closed {
+					log.Print("Ignore closing client. Already closed")
+					continue
+				}
+				err = client.Close()
 				if err != nil {
 					return utils.ErrorPrintf("an error occurred while closing client connexion pool: %v", err)
 				}
@@ -71,9 +76,9 @@ func (rw *RedisManager) Close() error {
 			delete(rw.Clients, category)
 		}
 	} else {
-		log.Print("Manager have no clients to close...")
+		err = utils.ErrorPrint("mnager have no clients to close")
 	}
-	return nil
+	return err
 }
 
 func (rw *RedisManager) add(redisWrapper *RedisWrapper, category string) {
@@ -92,6 +97,7 @@ type RedisWrapper struct {
 	config       *RedisConfig
 	channel      string
 	consumerName string
+	closed       bool
 }
 
 func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*RedisWrapper, error) {
@@ -109,8 +115,18 @@ func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*
 		config:       &config,
 		channel:      channel,
 		consumerName: consumerName,
+		closed:       false,
 	},
 		nil
+}
+
+func (w *RedisWrapper) Reconnect() error {
+	if !w.closed {
+		return utils.ErrorPrint("client is not closed")
+	}
+	w.client = redis.NewClient(w.config.ToOption())
+	w.closed = false
+	return nil
 }
 
 func (w *RedisWrapper) AddMessage(data map[string]interface{}) (string, error) {
@@ -200,6 +216,7 @@ func (w *RedisWrapper) DeleteGroupConsumer(group string) (int64, error) {
 }
 
 func (w *RedisWrapper) Close() error {
+	w.closed = true
 	return w.client.Close()
 }
 

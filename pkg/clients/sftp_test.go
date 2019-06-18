@@ -32,6 +32,11 @@ var _ = Describe("Sftp", func() {
 			It("should contain zero clients", func() {
 				Expect(manager.Conns).To(HaveLen(0))
 			})
+
+			It("should fail close without clients", func() {
+				err := manager.Close()
+				Expect(err).To(HaveOccurred())
+			})
 		})
 
 		It("should fail to add new client", func() {

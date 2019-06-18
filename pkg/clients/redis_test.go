@@ -61,11 +61,8 @@ var _ = Describe("Redis", func() {
 				Expect(manager.Clients[category][0]).To(Equal(client))
 			})
 
-			It("should not close clients", func() {
-				var err error
-				stdout := utils.CaptureStdout(func() { err = manager.Close() })
-				Expect(err).ToNot(HaveOccurred())
-				Expect(stdout).To(ContainSubstring("Manager have no clients to close..."))
+			It("should fail to close", func() {
+				Expect(manager.Close()).To(HaveOccurred())
 			})
 		})
 

@@ -76,6 +76,18 @@ func (sm *SFTPManager) AddClient() (*SFTPWrapper, error) {
 	return sftpStrut, err
 }
 
+func (sm *SFTPManager) Close() error {
+	if len(sm.Conns) == 0 {
+		return utils.ErrorPrint("no SFTP connections to close")
+	}
+	for _, conn := range sm.Conns {
+		if err := conn.Close(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Private method to create ssh and sftp clients
 func (sm *SFTPManager) newConnections() (*ssh.Client, *sftp.Client, error) {
 	sshConn, err := NewSSHClient(sm.host, sm.port, sm.sshConfig)
@@ -145,7 +157,7 @@ func NewSFTPWrapper(sshClient *ssh.Client, sftpClient *sftp.Client) *SFTPWrapper
 func (s *SFTPWrapper) Close() error {
 	s.Lock()
 	defer s.Unlock()
-	if s.closed == true {
+	if s.closed {
 		return utils.ErrorPrint("Connection was already closed")
 	}
 	var err = s.Client.Close()
