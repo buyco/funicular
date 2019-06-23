@@ -24,21 +24,14 @@ var _ = Describe("Redis", func() {
 
 	Describe("Using Manager", func() {
 
-		var manualManager = &RedisManager{
-			Clients: make(map[string][]*RedisWrapper),
-		}
 		var category = "test"
 		var manager *RedisManager
 
 		BeforeEach(func() {
-			manager = NewRedisManager()
+			manager = NewRedisManager(config)
 		})
 
 		Context("From constructor function", func() {
-
-			It("should create a valid instance", func() {
-				Expect(manager).To(Equal(manualManager))
-			})
 
 			It("should contain zero clients", func() {
 				Expect(len(manager.Clients)).To(BeZero())
@@ -46,7 +39,7 @@ var _ = Describe("Redis", func() {
 		})
 
 		It("should fail to add client with empty category", func() {
-			client, err := manager.AddClient(config, "", "test", "")
+			client, err := manager.AddClient("", "test", "")
 			Expect(err).To(HaveOccurred())
 			Expect(client).To(BeNil())
 		})
@@ -54,7 +47,7 @@ var _ = Describe("Redis", func() {
 		Context("Without Redis client in the stack", func() {
 
 			It("should use category as channel if channel is empty and add client to manager", func() {
-				client, err := manager.AddClient(config, category, "", "")
+				client, err := manager.AddClient(category, "", "")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(client.GetChannel()).To(Equal(category))
 				Expect(manager.Clients[category]).To(HaveLen(1))
@@ -69,8 +62,8 @@ var _ = Describe("Redis", func() {
 		Context("With Redis clients in the stack", func() {
 
 			It("should use category as channel if channel is empty and add client to manager", func() {
-				client, err := manager.AddClient(config, category, "", "")
-				client2, err2 := manager.AddClient(config, category, "", "")
+				client, err := manager.AddClient(category, "", "")
+				client2, err2 := manager.AddClient(category, "", "")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(client.GetChannel()).To(Equal(category))
 				Expect(err2).ToNot(HaveOccurred())
@@ -81,8 +74,8 @@ var _ = Describe("Redis", func() {
 			})
 
 			It("should close all clients", func() {
-				_, _ = manager.AddClient(config, category, "", "")
-				_, _ = manager.AddClient(config, category, "", "")
+				_, _ = manager.AddClient(category, "", "")
+				_, _ = manager.AddClient(category, "", "")
 				var err error
 				stdout := utils.CaptureStdout(func() { err = manager.Close() })
 				Expect(err).ToNot(HaveOccurred())

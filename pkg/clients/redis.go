@@ -28,23 +28,25 @@ func (rc *RedisConfig) ToOption() *redis.Options {
 //------------------------------------------------------------------------------
 
 type RedisManager struct {
+	config  RedisConfig
 	Clients map[string][]*RedisWrapper
 }
 
-func NewRedisManager() *RedisManager {
+func NewRedisManager(config RedisConfig) *RedisManager {
 	return &RedisManager{
+		config: config,
 		Clients: make(map[string][]*RedisWrapper),
 	}
 }
 
-func (rw *RedisManager) AddClient(config RedisConfig, category string, channel string, consumerName string) (*RedisWrapper, error) {
+func (rw *RedisManager) AddClient(category string, channel string, consumerName string) (*RedisWrapper, error) {
 	if category == "" {
 		return nil, utils.ErrorPrint("category must be filled")
 	}
 	if channel == "" {
 		channel = category
 	}
-	client, _ := NewRedisWrapper(config, channel, consumerName)
+	client, _ := NewRedisWrapper(rw.config, channel, consumerName)
 	rw.add(client, category)
 	return client, nil
 }
