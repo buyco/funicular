@@ -52,6 +52,7 @@ type SFTPManager struct {
 	Conns     []*SFTPWrapper
 	log       *log.Logger
 	sshConfig *ssh.ClientConfig
+	sync.Mutex
 }
 
 // SFTP Manager Construct
@@ -66,6 +67,8 @@ func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig) *SFTP
 }
 
 func (sm *SFTPManager) AddClient() (*SFTPWrapper, error) {
+	sm.Lock()
+	defer sm.Unlock()
 	sshConn, sftpConn, err := sm.newConnections()
 	if err != nil {
 		return nil, err

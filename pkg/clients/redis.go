@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -30,6 +31,7 @@ func (rc *RedisConfig) ToOption() *redis.Options {
 type RedisManager struct {
 	config  RedisConfig
 	Clients map[string][]*RedisWrapper
+	sync.RWMutex
 }
 
 func NewRedisManager(config RedisConfig) *RedisManager {
@@ -40,6 +42,8 @@ func NewRedisManager(config RedisConfig) *RedisManager {
 }
 
 func (rw *RedisManager) AddClient(category string, channel string, consumerName string) (*RedisWrapper, error) {
+	rw.Lock()
+	defer rw.Unlock()
 	if category == "" {
 		return nil, utils.ErrorPrint("category must be filled")
 	}
@@ -52,6 +56,8 @@ func (rw *RedisManager) AddClient(category string, channel string, consumerName 
 }
 
 func (rw *RedisManager) GetCategories() (clientsCat []string) {
+	rw.RLock()
+	defer rw.RUnlock()
 	for key := range rw.Clients {
 		clientsCat = append(clientsCat, key)
 	}
@@ -100,6 +106,7 @@ type RedisWrapper struct {
 	channel      string
 	consumerName string
 	closed       bool
+	sync.RWMutex
 }
 
 func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*RedisWrapper, error) {
@@ -126,8 +133,12 @@ func (w *RedisWrapper) Reconnect() error {
 	if !w.closed {
 		return utils.ErrorPrint("client is not closed")
 	}
+
+	w.Lock()
 	w.client = redis.NewClient(w.config.ToOption())
 	w.closed = false
+	w.Unlock()
+
 	return nil
 }
 
@@ -218,6 +229,8 @@ func (w *RedisWrapper) DeleteGroupConsumer(group string) (int64, error) {
 }
 
 func (w *RedisWrapper) Close() error {
+	w.Lock()
+	defer w.Unlock()
 	w.closed = true
 	return w.client.Close()
 }

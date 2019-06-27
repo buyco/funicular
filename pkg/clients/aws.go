@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 )
 
 func NewAWSConfig() *aws.Config {
@@ -46,6 +47,7 @@ type S3Manager struct {
 	session *session.Session
 	client  *s3.S3
 	S3      []StorageAccessLayer
+	sync.Mutex
 }
 
 func NewS3Manager(session *session.Session) *S3Manager {
@@ -56,6 +58,8 @@ func NewS3Manager(session *session.Session) *S3Manager {
 }
 
 func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
+	sm.Lock()
+	defer sm.Unlock()
 	s3Wrapper := NewS3Wrapper(bucketName, sm.client)
 	sm.S3 = append(sm.S3, s3Wrapper)
 
