@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/buyco/funicular/internal/utils"
 	"github.com/buyco/funicular/pkg/clients"
+	"github.com/sirupsen/logrus"
 
 	"fmt"
 	"github.com/pkg/sftp"
@@ -35,6 +36,7 @@ func main() {
 				os.Getenv("SFTP_USER"),
 				os.Getenv("SFTP_PASSWORD"),
 			),
+			logrus.New(),
 		)
 		sftpConn, err := sftpManager.AddClient()
 		if err != nil {

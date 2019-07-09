@@ -29,8 +29,7 @@ var _ = Describe("Env", func() {
 	Context("With not allowed environment", func() {
 
 		It("should fail to load non-existent file", func() {
-			stdout := CaptureStdout(func() { err = LoadEnvFile("foo", "bar") })
-			Expect(stdout).To(ContainSubstring("Environment file not loaded for the current env"))
+			err = LoadEnvFile("foo", "bar")
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

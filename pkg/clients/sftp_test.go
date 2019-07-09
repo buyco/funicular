@@ -3,6 +3,7 @@ package clients_test
 import (
 	. "github.com/buyco/funicular/pkg/clients"
 	"golang.org/x/crypto/ssh"
+	"github.com/sirupsen/logrus"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -21,7 +22,7 @@ var _ = Describe("Sftp", func() {
 
 	Describe("Using Manager", func() {
 
-		manager = NewSFTPManager("localhost", 22, config)
+		manager = NewSFTPManager("localhost", 22, config, logrus.New())
 
 		Context("From constructor function", func() {
 

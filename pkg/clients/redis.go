@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/buyco/funicular/internal/utils"
 	"github.com/go-redis/redis"
-	"log"
+	"github.com/sirupsen/logrus"
 	"math/rand"
 	"net"
 	"strconv"
@@ -31,13 +31,15 @@ func (rc *RedisConfig) ToOption() *redis.Options {
 type RedisManager struct {
 	config  RedisConfig
 	Clients map[string][]*RedisWrapper
+	logger  *logrus.Logger
 	sync.RWMutex
 }
 
-func NewRedisManager(config RedisConfig) *RedisManager {
+func NewRedisManager(config RedisConfig, logger *logrus.Logger) *RedisManager {
 	return &RedisManager{
-		config: config,
+		config:  config,
 		Clients: make(map[string][]*RedisWrapper),
+		logger:  logger,
 	}
 }
 
@@ -72,7 +74,7 @@ func (rw *RedisManager) Close() error {
 		for category, clients := range manageClientsCopy {
 			for _, client := range clients {
 				if client.closed {
-					log.Print("Ignore closing client. Already closed")
+					rw.logger.Debug("Ignore closing client. Already closed")
 					continue
 				}
 				err = client.Close()

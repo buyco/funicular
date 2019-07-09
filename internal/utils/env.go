@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"github.com/joho/godotenv"
-	"log"
 	"os"
 )
 
@@ -16,8 +15,6 @@ func LoadEnvFile(envFile string, runningEnv string) error {
 		if err != nil {
 			return ErrorPrint("Error loading environment file")
 		}
-	} else {
-		log.Print("Environment file not loaded for the current env")
 	}
 	return nil
 }

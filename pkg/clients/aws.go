@@ -6,8 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"io"
-	"log"
-	"os"
 	"sync"
 )
 
@@ -30,14 +28,12 @@ type AWSManager struct {
 	disconnected chan bool
 	closed       bool
 	S3Manager    *S3Manager
-	log          *log.Logger
 }
 
 func NewAWSManager(session *session.Session) *AWSManager {
 	return &AWSManager{
 		session:   session,
 		S3Manager: NewS3Manager(session),
-		log:       log.New(os.Stdout, "AWSManager", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }
 

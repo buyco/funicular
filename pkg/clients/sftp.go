@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/buyco/funicular/internal/utils"
 	"github.com/pkg/sftp"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
-	"log"
-	"os"
+	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -50,19 +50,19 @@ type SFTPManager struct {
 	user      string
 	password  string
 	Conns     []*SFTPWrapper
-	log       *log.Logger
 	sshConfig *ssh.ClientConfig
+	logger    *logrus.Logger
 	sync.Mutex
 }
 
 // SFTP Manager Construct
-func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig) *SFTPManager {
+func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, logger *logrus.Logger) *SFTPManager {
 	return &SFTPManager{
 		host:      host,
 		port:      port,
 		Conns:     make([]*SFTPWrapper, 0),
 		sshConfig: sshConfig,
-		log:       log.New(os.Stdout, "SFTPManager", log.Ldate|log.Ltime|log.Lshortfile),
+		logger:    logger,
 	}
 }
 
@@ -117,11 +117,33 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		_ = c.connection.Close()
 		break
 	case res := <-closed:
-		sm.log.Printf("Connection closed, reconnecting: %s", res)
-		sshConn, sftpConn, err := sm.newConnections()
-		if err != nil {
-			log.Fatal(err)
+		sm.logger.Debugf("Connection closed, reconnecting: %s", res)
+		cb := breaker.New(3, 1, 5*time.Second)
+		var (
+			sshConn *ssh.Client
+			sftpConn *sftp.Client
+			hasReconnected = false
+		)
+		for !hasReconnected {
+			result := cb.Run(func() error {
+				var err error
+				sshConn, sftpConn, err = sm.newConnections()
+				if err != nil {
+					return err
+				}
+				return nil
+			})
+
+			switch result {
+			case nil:
+				hasReconnected = true
+			case breaker.ErrBreakerOpen:
+				sm.logger.Infof("Circuit breaker open, will retry in 5 seconds")
+			default:
+				sm.logger.Errorf("Failed to reconnect: %v", result)
+			}
 		}
+
 		atomic.AddUint64(&c.reconnects, 1)
 		c.Lock()
 		c.connection = sshConn

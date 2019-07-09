@@ -12,5 +12,7 @@ require (
 	github.com/onsi/gomega v1.5.0
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pkg/sftp v1.10.0
+	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
+	gopkg.in/eapache/go-resiliency.v1 v1.2.0
 )

@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Redis", func() {
@@ -28,7 +29,7 @@ var _ = Describe("Redis", func() {
 		var manager *RedisManager
 
 		BeforeEach(func() {
-			manager = NewRedisManager(config)
+			manager = NewRedisManager(config, logrus.New())
 		})
 
 		Context("From constructor function", func() {
