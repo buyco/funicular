@@ -138,7 +138,6 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 			case nil:
 				hasReconnected = true
 			case breaker.ErrBreakerOpen:
-				sm.logger.Infof("Circuit breaker open, will retry in 5 seconds")
 			default:
 				sm.logger.Errorf("Failed to reconnect: %v", result)
 			}
