@@ -47,3 +47,18 @@ func (mr *MockStorageAccessLayerMockRecorder) Upload(path, filename, data interf
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockStorageAccessLayer)(nil).Upload), path, filename, data)
 }
+
+// Download mocks base method
+func (m *MockStorageAccessLayer) Download(path, filename string, data io.WriterAt) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Download", path, filename, data)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Download indicates an expected call of Download
+func (mr *MockStorageAccessLayerMockRecorder) Download(path, filename, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Download", reflect.TypeOf((*MockStorageAccessLayer)(nil).Download), path, filename, data)
+}

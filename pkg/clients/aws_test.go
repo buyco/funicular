@@ -1,8 +1,9 @@
 package clients_test
 
 import (
-	"github.com/buyco/funicular/internal/mock_clients"
+	"github.com/buyco/funicular/internal/mocks"
 	. "github.com/buyco/funicular/pkg/clients"
+	"io"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/awstesting/mock"
@@ -108,6 +109,13 @@ var _ = Describe("Aws", func() {
 			It("should not fail to call uploader", func() {
 				mockS3.EXPECT().Upload("test-path", "test-file", strings.NewReader("test-data"))
 				_, respErr := mockS3.Upload("test-path", "test-file", strings.NewReader("test-data"))
+				Expect(respErr).ToNot(HaveOccurred())
+			})
+
+			It("should not fail to call downloader", func() {
+				var buffer io.WriterAt
+				mockS3.EXPECT().Download("test-path", "test-file", buffer)
+				_, respErr := mockS3.Download("test-path", "test-file", buffer)
 				Expect(respErr).ToNot(HaveOccurred())
 			})
 		})

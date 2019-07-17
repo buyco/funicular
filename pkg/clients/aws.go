@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/buyco/funicular/internal/utils"
 	"io"
 	"sync"
 )
@@ -67,6 +68,7 @@ func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 // Storage Layer interface
 type StorageAccessLayer interface {
 	Upload(path string, filename string, data io.Reader) (string, error)
+	Download(path string, filename string, data io.WriterAt) (int64, error)
 }
 
 // S3 Adapter
@@ -98,4 +100,16 @@ func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader) (stri
 		location = result.Location
 	}
 	return location, err
+}
+
+func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (int64, error) {
+	downParams := &s3.GetObjectInput{}
+	downParams.SetBucket(s3w.bucketName)
+	downParams.SetKey(path + filename)
+	err := downParams.Validate()
+	if err != nil {
+		return 0, utils.ErrorPrintf("Download params malformed: %v", err)
+	}
+	result, err := s3w.downloader.Download(data, downParams)
+	return result, err
 }
