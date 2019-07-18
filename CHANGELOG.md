@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.1.9](https://github.com/buyco/funicular/tree/v0.1.9)
+
+* Fix AWS S3 Reader
+
 # [v0.1.8](https://github.com/buyco/funicular/tree/v0.1.8)
 
 * Add S3 reader and test
