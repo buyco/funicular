@@ -65,16 +65,16 @@ func (mr *MockStorageAccessLayerMockRecorder) Download(path, filename, data inte
 }
 
 // Read mocks base method
-func (m *MockStorageAccessLayer) Read(path, filename string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
+func (m *MockStorageAccessLayer) Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Read", path, filename, limit, readFrom)
+	ret := m.ctrl.Call(m, "Read", path, limit, readFrom)
 	ret0, _ := ret[0].(*s3.ListObjectsV2Output)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Read indicates an expected call of Read
-func (mr *MockStorageAccessLayerMockRecorder) Read(path, filename, limit, readFrom interface{}) *gomock.Call {
+func (mr *MockStorageAccessLayerMockRecorder) Read(path, limit, readFrom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockStorageAccessLayer)(nil).Read), path, filename, limit, readFrom)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockStorageAccessLayer)(nil).Read), path, limit, readFrom)
 }

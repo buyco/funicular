@@ -71,7 +71,7 @@ func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 type StorageAccessLayer interface {
 	Upload(path string, filename string, data io.Reader) (string, error)
 	Download(path string, filename string, data io.WriterAt) (int64, error)
-	Read(path string, filename string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error)
+	Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error)
 }
 
 // S3 Adapter
@@ -121,7 +121,7 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (
 	return result, err
 }
 
-func (s3w *S3Wrapper) Read(path string, filename string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
+func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
 	readParams := &s3.ListObjectsV2Input{
 		Bucket:  aws.String(s3w.bucketName),
 		Prefix: aws.String(path),
