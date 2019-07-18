@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.1.8](https://github.com/buyco/funicular/tree/v0.1.8)
+
+* Add S3 reader and test
+
 # [v0.1.7](https://github.com/buyco/funicular/tree/v0.1.7)
 
 * Add Changelog
