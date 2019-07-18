@@ -118,6 +118,12 @@ var _ = Describe("Aws", func() {
 				_, respErr := mockS3.Download("test-path", "test-file", buffer)
 				Expect(respErr).ToNot(HaveOccurred())
 			})
+
+			It("should not fail to call reader", func() {
+				mockS3.EXPECT().Read("test-path", "test-file", int64(1), "test-file")
+				_, respErr := mockS3.Read("test-path", "test-file", int64(1), "test-file")
+				Expect(respErr).ToNot(HaveOccurred())
+			})
 		})
 	})
 })

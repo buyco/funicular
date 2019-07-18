@@ -1,7 +1,9 @@
 package clients
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -69,6 +71,7 @@ func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 type StorageAccessLayer interface {
 	Upload(path string, filename string, data io.Reader) (string, error)
 	Download(path string, filename string, data io.WriterAt) (int64, error)
+	Read(path string, filename string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error)
 }
 
 // S3 Adapter
@@ -76,15 +79,18 @@ type S3Wrapper struct {
 	bucketName string
 	uploader   *s3manager.Uploader
 	downloader *s3manager.Downloader
+	reader     func(input *s3.ListObjectsV2Input) (*s3.ListObjectsV2Output, error)
 }
 
 func NewS3Wrapper(bucketName string, s3Client *s3.S3) *S3Wrapper {
 	uploader := s3manager.NewUploaderWithClient(s3Client)
 	downloader := s3manager.NewDownloaderWithClient(s3Client)
+	reader := s3Client.ListObjectsV2
 	return &S3Wrapper{
 		bucketName: bucketName,
 		uploader:   uploader,
 		downloader: downloader,
+		reader:     reader,
 	}
 }
 
@@ -103,13 +109,40 @@ func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader) (stri
 }
 
 func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (int64, error) {
-	downParams := &s3.GetObjectInput{}
-	downParams.SetBucket(s3w.bucketName)
-	downParams.SetKey(path + filename)
+	downParams := &s3.GetObjectInput{
+		Bucket:  aws.String(s3w.bucketName),
+		Key:    aws.String(path + filename),
+	}
 	err := downParams.Validate()
 	if err != nil {
 		return 0, utils.ErrorPrintf("Download params malformed: %v", err)
 	}
 	result, err := s3w.downloader.Download(data, downParams)
+	return result, err
+}
+
+func (s3w *S3Wrapper) Read(path string, filename string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
+	readParams := &s3.ListObjectsV2Input{
+		Bucket:  aws.String(s3w.bucketName),
+		Prefix: aws.String(path),
+		MaxKeys: aws.Int64(limit),
+	}
+
+	if readFrom != "" {
+		readParams.SetStartAfter(readFrom)
+	}
+
+	result, err := s3w.reader(readParams)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchBucket:
+				return nil, utils.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
+
+			default:
+				return nil, aerr
+			}
+		}
+	}
 	return result, err
 }
