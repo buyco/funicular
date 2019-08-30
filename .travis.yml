@@ -5,16 +5,15 @@ go:
   - 1.12.x
   - gotip
 
-addons:
-  apt:
-    packages:
-      - redis-server
+services:
+  - redis-server
 
 env:
   global:
     - GO111MODULE=on
     - REDIS_HOST=localhost
-    - REDIS_PORT=6379 REDIS_DB=1
+    - REDIS_PORT=6379
+    - REDIS_DB=1
 
 install:
   - go get ./...
