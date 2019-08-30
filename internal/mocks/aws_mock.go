@@ -80,15 +80,16 @@ func (mr *MockStorageAccessLayerMockRecorder) Read(path, limit, readFrom interfa
 }
 
 // Delete mocks base method
-func (m *MockStorageAccessLayer) Delete(path string, files ...string) error {
+func (m *MockStorageAccessLayer) Delete(path string, files ...string) (*s3.DeleteObjectsOutput, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{path}
 	for _, a := range files {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Delete", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*s3.DeleteObjectsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Delete indicates an expected call of Delete
