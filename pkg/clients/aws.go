@@ -72,6 +72,7 @@ type StorageAccessLayer interface {
 	Upload(path string, filename string, data io.Reader) (string, error)
 	Download(path string, filename string, data io.WriterAt) (int64, error)
 	Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error)
+	Delete(path string, files ...string) error
 }
 
 // S3 Adapter
@@ -79,18 +80,21 @@ type S3Wrapper struct {
 	bucketName string
 	uploader   *s3manager.Uploader
 	downloader *s3manager.Downloader
+	deleter    *s3manager.BatchDelete
 	reader     func(input *s3.ListObjectsV2Input) (*s3.ListObjectsV2Output, error)
 }
 
 func NewS3Wrapper(bucketName string, s3Client *s3.S3) *S3Wrapper {
 	uploader := s3manager.NewUploaderWithClient(s3Client)
 	downloader := s3manager.NewDownloaderWithClient(s3Client)
+	deleter := s3manager.NewBatchDeleteWithClient(s3Client)
 	reader := s3Client.ListObjectsV2
 	return &S3Wrapper{
 		bucketName: bucketName,
 		uploader:   uploader,
 		downloader: downloader,
 		reader:     reader,
+		deleter:    deleter,
 	}
 }
 
@@ -119,6 +123,26 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (
 	}
 	result, err := s3w.downloader.Download(data, downParams)
 	return result, err
+}
+
+func (s3w *S3Wrapper) Delete(path string, filename ...string) error {
+	var objects []s3manager.BatchDeleteObject
+	for _, val := range filename {
+		objects = append(objects, s3manager.BatchDeleteObject{
+			Object: &s3.DeleteObjectInput{
+				Key:    aws.String(path + val),
+				Bucket: aws.String(s3w.bucketName),
+			},
+		},
+		)
+	}
+
+	if err := s3w.deleter.Delete(aws.BackgroundContext(), &s3manager.DeleteObjectsIterator{
+		Objects: objects,
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
