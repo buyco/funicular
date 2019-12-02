@@ -114,7 +114,7 @@ func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader) (stri
 
 func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (int64, error) {
 	downParams := &s3.GetObjectInput{
-		Bucket:  aws.String(s3w.bucketName),
+		Bucket: aws.String(s3w.bucketName),
 		Key:    aws.String(path + filename),
 	}
 	err := downParams.Validate()
@@ -128,13 +128,13 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (
 func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjectsOutput, error) {
 	var objects []*s3.ObjectIdentifier
 	for _, file := range filename {
-		objects = append(objects, &s3.ObjectIdentifier{ Key: aws.String(path + file) })
+		objects = append(objects, &s3.ObjectIdentifier{Key: aws.String(path + file)})
 	}
 	input := &s3.DeleteObjectsInput{
 		Bucket: aws.String(s3w.bucketName),
 		Delete: &s3.Delete{
 			Objects: objects,
-			Quiet: aws.Bool(false),
+			Quiet:   aws.Bool(false),
 		},
 	}
 	err := input.Validate()
@@ -163,7 +163,7 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
 	readParams := &s3.ListObjectsV2Input{
 		Bucket:  aws.String(s3w.bucketName),
-		Prefix: aws.String(path),
+		Prefix:  aws.String(path),
 		MaxKeys: aws.Int64(limit),
 	}
 	if readFrom != "" {

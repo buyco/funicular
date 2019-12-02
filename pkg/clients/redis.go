@@ -67,13 +67,11 @@ func (rw *RedisManager) GetCategories() (clientsCat []string) {
 }
 
 func (rw *RedisManager) Close() error {
-	var manageClientsCopy map[string][]*RedisWrapper
 	var err error
-	manageClientsCopy = copyRedisClients(rw.Clients)
-	if len(manageClientsCopy) > 0 {
-		for category, clients := range manageClientsCopy {
+	if len(rw.Clients) > 0 {
+		for _, clients := range rw.Clients {
 			for _, client := range clients {
-				if client.closed {
+				if client.Closed {
 					rw.logger.Debug("Ignore closing client. Already closed")
 					continue
 				}
@@ -81,12 +79,10 @@ func (rw *RedisManager) Close() error {
 				if err != nil {
 					return utils.ErrorPrintf("an error occurred while closing client connexion pool: %v", err)
 				}
-				rw.Clients[category] = rw.Clients[category][1:]
 			}
-			delete(rw.Clients, category)
 		}
 	} else {
-		err = utils.ErrorPrint("mnager have no clients to close")
+		err = utils.ErrorPrint("manager have no clients to close")
 	}
 	return err
 }
@@ -107,7 +103,7 @@ type RedisWrapper struct {
 	config       *RedisConfig
 	channel      string
 	consumerName string
-	closed       bool
+	Closed       bool
 	sync.RWMutex
 }
 
@@ -126,19 +122,19 @@ func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*
 		config:       &config,
 		channel:      channel,
 		consumerName: consumerName,
-		closed:       false,
+		Closed:       false,
 	},
 		nil
 }
 
 func (w *RedisWrapper) Reconnect() error {
-	if !w.closed {
+	if !w.Closed {
 		return utils.ErrorPrint("client is not closed")
 	}
 
 	w.Lock()
 	w.client = redis.NewClient(w.config.ToOption())
-	w.closed = false
+	w.Closed = false
 	w.Unlock()
 
 	return nil
@@ -233,7 +229,7 @@ func (w *RedisWrapper) DeleteGroupConsumer(group string) (int64, error) {
 func (w *RedisWrapper) Close() error {
 	w.Lock()
 	defer w.Unlock()
-	w.closed = true
+	w.Closed = true
 	return w.client.Close()
 }
 
@@ -255,16 +251,4 @@ func (w *RedisWrapper) FlushDB() (string, error) {
 func (w *RedisWrapper) FlushDBAsync() (string, error) {
 	result := w.client.FlushDBAsync()
 	return result.Result()
-}
-
-//------------------------------------------------------------------------------
-// MISC
-//------------------------------------------------------------------------------
-
-func copyRedisClients(originalMap map[string][]*RedisWrapper) map[string][]*RedisWrapper {
-	var newMap = make(map[string][]*RedisWrapper)
-	for key, values := range originalMap {
-		newMap[key] = values
-	}
-	return newMap
 }

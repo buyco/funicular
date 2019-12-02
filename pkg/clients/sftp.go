@@ -120,8 +120,8 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		sm.logger.Debugf("Connection closed, reconnecting: %s", res)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
-			sshConn *ssh.Client
-			sftpConn *sftp.Client
+			sshConn        *ssh.Client
+			sftpConn       *sftp.Client
 			hasReconnected = false
 		)
 		for !hasReconnected {

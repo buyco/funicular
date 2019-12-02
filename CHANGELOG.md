@@ -1,6 +1,18 @@
 CHANGE LOG
 ===================
 
+# [v0.1.12](https://github.com/buyco/funicular/tree/v0.1.12)
+
+* Delete "fake" copy of Redis clients (slice are pointers)
+
+# [v0.1.11](https://github.com/buyco/funicular/tree/v0.1.11)
+
+* Change AWS S3 deleter
+
+# [v0.1.10](https://github.com/buyco/funicular/tree/v0.1.10)
+
+* Add Deleter for AWS S3
+
 # [v0.1.9](https://github.com/buyco/funicular/tree/v0.1.9)
 
 * Fix AWS S3 Reader
