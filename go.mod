@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/aws/aws-sdk-go v1.19.49
-	github.com/buyco/keel v0.0.3
+	github.com/buyco/keel v0.0.4
 	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/golang/mock v1.3.1
 	github.com/joho/godotenv v1.3.0
