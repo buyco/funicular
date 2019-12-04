@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/buyco/funicular/internal/utils"
+	"github.com/buyco/keel/pkg/utils"
 	"github.com/buyco/funicular/pkg/clients"
 	"github.com/sirupsen/logrus"
 

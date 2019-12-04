@@ -3,7 +3,7 @@ package clients
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/buyco/funicular/internal/utils"
+	"github.com/buyco/keel/pkg/utils"
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 	"math/rand"

@@ -2,7 +2,7 @@ package clients
 
 import (
 	"fmt"
-	"github.com/buyco/funicular/internal/utils"
+	"github.com/buyco/keel/pkg/utils"
 	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
