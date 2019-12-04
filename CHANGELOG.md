@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.1.14](https://github.com/buyco/funicular/tree/v0.1.14)
+
+* Update Keel dep to v0.0.4
+
 # [v0.1.13](https://github.com/buyco/funicular/tree/v0.1.13)
 
 * Migrate common packages to Keel toolkit
