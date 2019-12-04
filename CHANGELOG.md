@@ -1,6 +1,11 @@
 CHANGE LOG
 ===================
 
+# [v0.1.13](https://github.com/buyco/funicular/tree/v0.1.13)
+
+* Migrate common packages to Keel toolkit
+* Move coverage formatter script to tools directory
+
 # [v0.1.12](https://github.com/buyco/funicular/tree/v0.1.12)
 
 * Delete "fake" copy of Redis clients (slice are pointers)
