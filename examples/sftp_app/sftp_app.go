@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/buyco/keel/pkg/utils"
 	"github.com/buyco/funicular/pkg/clients"
+	"github.com/buyco/keel/pkg/utils"
 	"github.com/sirupsen/logrus"
 
 	"fmt"

@@ -1,15 +1,15 @@
 package clients_test
 
 import (
-	"github.com/buyco/keel/pkg/utils"
 	. "github.com/buyco/funicular/pkg/clients"
+	"github.com/buyco/keel/pkg/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"time"
-	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Redis", func() {

@@ -2,8 +2,8 @@ package clients_test
 
 import (
 	. "github.com/buyco/funicular/pkg/clients"
-	"golang.org/x/crypto/ssh"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
 	"time"
 
 	. "github.com/onsi/ginkgo"

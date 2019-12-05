@@ -118,12 +118,12 @@ func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*
 	}
 	client := redis.NewClient(config.ToOption())
 	return &RedisWrapper{
-		client:       client,
-		config:       &config,
-		channel:      channel,
-		consumerName: consumerName,
-		Closed:       false,
-	},
+			client:       client,
+			config:       &config,
+			channel:      channel,
+			consumerName: consumerName,
+			Closed:       false,
+		},
 		nil
 }
 
