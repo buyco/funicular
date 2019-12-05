@@ -13,14 +13,14 @@ import (
 	"time"
 )
 
-const ENV_DIR = "../../.env"
-const STREAM = "example-stream"
-const CONSUMER_NAME = STREAM + "-consumer"
-const BUCKET_NAME = "buyco-foo-bar"
-const STORE_PATH = "/foo/bar/"
+const envDir = "../../.env"
+const stream = "example-stream"
+const consumerName = stream + "-consumer"
+const bucketName = "buyco-foo-bar"
+const storePath = "/foo/bar/"
 
 func main() {
-	utils.LoadEnvFile(ENV_DIR, os.Getenv("ENV"))
+	utils.LoadEnvFile(envDir, os.Getenv("ENV"))
 	fileChan := make(chan redis.XMessage)
 	s3Chan := make(chan string)
 	go func() {
@@ -32,8 +32,8 @@ func main() {
 				Port: uint16(redisPort),
 				DB:   uint8(redisDb),
 			},
-			STREAM,
-			CONSUMER_NAME,
+			stream,
+			consumerName,
 		)
 		if wrapperErr != nil {
 			log.Fatalf("Redis read error: %v", wrapperErr)
@@ -58,15 +58,15 @@ func main() {
 				}
 			}
 		}()
-		lastId := "$"
+		lastID := "$"
 		for {
-			vals, err := redisCli.ReadMessage(lastId, 5, 3000*time.Millisecond)
+			vals, err := redisCli.ReadMessage(lastID, 5, 3000*time.Millisecond)
 			if err != nil {
 				log.Printf("Redis read error: %v", err)
 			} else {
 				NbStream := len(vals)
 				NbMsgLastStreamEntry := len(vals[NbStream-1].Messages)
-				lastId = vals[NbStream-1].Messages[NbMsgLastStreamEntry-1].ID
+				lastID = vals[NbStream-1].Messages[NbMsgLastStreamEntry-1].ID
 				for _, msgs := range vals {
 					for _, msg := range msgs.Messages {
 						log.Printf("Got message with file: %s", msg.Values["filename"].(string))
@@ -80,12 +80,12 @@ func main() {
 		MaxRetries: aws.Int(2),
 	}
 	awsManager := clients.NewAWSManager(clients.NewAWSSession(awsConfig))
-	s3Bucket := awsManager.S3Manager.Add(BUCKET_NAME)
+	s3Bucket := awsManager.S3Manager.Add(bucketName)
 	for {
 		select {
 		case fileData := <-fileChan:
 			result, err := s3Bucket.Upload(
-				STORE_PATH,
+				storePath,
 				fileData.Values["filename"].(string),
 				strings.NewReader(fileData.Values["fileData"].(string)),
 			)

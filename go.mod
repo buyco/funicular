@@ -15,5 +15,6 @@ require (
 	github.com/pkg/sftp v1.10.0
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8
+	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
 	gopkg.in/eapache/go-resiliency.v1 v1.2.0
 )

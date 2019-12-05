@@ -13,12 +13,14 @@ import (
 	"time"
 )
 
+// RedisConfig is a struct definition for Redis Client
 type RedisConfig struct {
 	Host string
 	Port uint16
 	DB   uint8
 }
 
+// ToOption is used by RedisConfig to generate Option struct from client
 func (rc *RedisConfig) ToOption() *redis.Options {
 	return &redis.Options{
 		Addr: net.JoinHostPort(rc.Host, strconv.Itoa(int(rc.Port))),
@@ -28,6 +30,7 @@ func (rc *RedisConfig) ToOption() *redis.Options {
 
 //------------------------------------------------------------------------------
 
+// RedisManager is a struct to manage Redis clients
 type RedisManager struct {
 	config  RedisConfig
 	Clients map[string][]*RedisWrapper
@@ -35,6 +38,7 @@ type RedisManager struct {
 	sync.RWMutex
 }
 
+// NewRedisManager is RedisManager struct constructor
 func NewRedisManager(config RedisConfig, logger *logrus.Logger) *RedisManager {
 	return &RedisManager{
 		config:  config,
@@ -43,6 +47,7 @@ func NewRedisManager(config RedisConfig, logger *logrus.Logger) *RedisManager {
 	}
 }
 
+// AddClient pushes a new client in manager
 func (rw *RedisManager) AddClient(category string, channel string, consumerName string) (*RedisWrapper, error) {
 	rw.Lock()
 	defer rw.Unlock()
@@ -57,6 +62,7 @@ func (rw *RedisManager) AddClient(category string, channel string, consumerName 
 	return client, nil
 }
 
+// GetCategories fetches categories of client available
 func (rw *RedisManager) GetCategories() (clientsCat []string) {
 	rw.RLock()
 	defer rw.RUnlock()
@@ -66,6 +72,7 @@ func (rw *RedisManager) GetCategories() (clientsCat []string) {
 	return
 }
 
+// Close closes all connections
 func (rw *RedisManager) Close() error {
 	var err error
 	if len(rw.Clients) > 0 {
@@ -77,7 +84,7 @@ func (rw *RedisManager) Close() error {
 				}
 				err = client.Close()
 				if err != nil {
-					return utils.ErrorPrintf("an error occurred while closing client connexion pool: %v", err)
+					return utils.ErrorPrintf("an error occurred while closing client connection pool: %v", err)
 				}
 			}
 		}
@@ -98,6 +105,7 @@ func (rw *RedisManager) add(redisWrapper *RedisWrapper, category string) {
 
 //------------------------------------------------------------------------------
 
+// RedisWrapper struct is a Redis client wrapper
 type RedisWrapper struct {
 	client       *redis.Client
 	config       *RedisConfig
@@ -107,6 +115,7 @@ type RedisWrapper struct {
 	sync.RWMutex
 }
 
+// NewRedisWrapper is RedisWrapper constructor
 func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*RedisWrapper, error) {
 	if channel == "" {
 		return nil, utils.ErrorPrint("channel must be filled")
@@ -118,15 +127,16 @@ func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*
 	}
 	client := redis.NewClient(config.ToOption())
 	return &RedisWrapper{
-			client:       client,
-			config:       &config,
-			channel:      channel,
-			consumerName: consumerName,
-			Closed:       false,
-		},
+		client:       client,
+		config:       &config,
+		channel:      channel,
+		consumerName: consumerName,
+		Closed:       false,
+	},
 		nil
 }
 
+// Reconnect reconnects client to Redis
 func (w *RedisWrapper) Reconnect() error {
 	if !w.Closed {
 		return utils.ErrorPrint("client is not closed")
@@ -140,6 +150,7 @@ func (w *RedisWrapper) Reconnect() error {
 	return nil
 }
 
+// AddMessage pushes message in Redis stream
 func (w *RedisWrapper) AddMessage(data map[string]interface{}) (string, error) {
 	xAddArgs := &redis.XAddArgs{
 		Stream: w.channel,
@@ -149,11 +160,12 @@ func (w *RedisWrapper) AddMessage(data map[string]interface{}) (string, error) {
 	return result.Result()
 }
 
-func (w *RedisWrapper) ReadMessage(lastId string, count int64, block time.Duration) ([]redis.XStream, error) {
+// ReadMessage fetches message from Redis stream
+func (w *RedisWrapper) ReadMessage(lastID string, count int64, block time.Duration) ([]redis.XStream, error) {
 	var channels = make([]string, 0)
 	channels = append(channels, w.channel)
 	// Not implemented explicitly in the lib but works the way the code is written
-	channels = append(channels, lastId)
+	channels = append(channels, lastID)
 	xReadArgs := &redis.XReadArgs{
 		Streams: channels,
 		Count:   count,
@@ -163,6 +175,7 @@ func (w *RedisWrapper) ReadMessage(lastId string, count int64, block time.Durati
 	return result.Result()
 }
 
+// ReadGroupMessage fetches message from a Redis stream group
 func (w *RedisWrapper) ReadGroupMessage(group string, count int64, block time.Duration, extraIds ...string) ([]redis.XStream, error) {
 	var channels = make([]string, 0)
 	channels = append(channels, w.channel)
@@ -186,46 +199,55 @@ func (w *RedisWrapper) ReadGroupMessage(group string, count int64, block time.Du
 	return result.Result()
 }
 
+// GetChannel returns configured wrapper client
 func (w *RedisWrapper) GetChannel() string {
 	return w.channel
 }
 
+// ReadRangeMessage fetches Redis stream messages based on a range
 func (w *RedisWrapper) ReadRangeMessage(start string, stop string) ([]redis.XMessage, error) {
 	result := w.client.XRange(w.channel, start, stop)
 	return result.Result()
 }
 
+// DeleteMessage drops message from a redis stream
 func (w *RedisWrapper) DeleteMessage(ids ...string) (int64, error) {
 	result := w.client.XDel(w.channel, ids...)
 	return result.Result()
 }
 
+// CreateGroup creates a Redis stream group
 func (w *RedisWrapper) CreateGroup(group string, start string) (string, error) {
 	// MKSTREAM is not documented in Redis and allow to create stream if it is not created beforehand
 	result := w.client.XGroupCreateMkStream(w.channel, group, start)
 	return result.Result()
 }
 
+// DeleteGroup deletes a Redis stream group
 func (w *RedisWrapper) DeleteGroup(group string) (int64, error) {
 	result := w.client.XGroupDestroy(w.channel, group)
 	return result.Result()
 }
 
+// PendingMessage returns info of pending messages
 func (w *RedisWrapper) PendingMessage(group string) (*redis.XPending, error) {
 	result := w.client.XPending(w.channel, group)
 	return result.Result()
 }
 
+// AckMessage acknowledges message
 func (w *RedisWrapper) AckMessage(group string, ids ...string) (int64, error) {
 	result := w.client.XAck(w.channel, group, ids...)
 	return result.Result()
 }
 
+// DeleteGroupConsumer deletes a group as stream consumer
 func (w *RedisWrapper) DeleteGroupConsumer(group string) (int64, error) {
 	result := w.client.XGroupDelConsumer(w.channel, group, w.consumerName)
 	return result.Result()
 }
 
+// Close closes Redis connection
 func (w *RedisWrapper) Close() error {
 	w.Lock()
 	defer w.Unlock()
@@ -233,21 +255,25 @@ func (w *RedisWrapper) Close() error {
 	return w.client.Close()
 }
 
+// FlushAll flushes all Redis
 func (w *RedisWrapper) FlushAll() (string, error) {
 	result := w.client.FlushAll()
 	return result.Result()
 }
 
+// FlushAllAsync flushes all Redis asynchronously
 func (w *RedisWrapper) FlushAllAsync() (string, error) {
 	result := w.client.FlushAllAsync()
 	return result.Result()
 }
 
+// FlushDB flush Redis database
 func (w *RedisWrapper) FlushDB() (string, error) {
 	result := w.client.FlushDB()
 	return result.Result()
 }
 
+// FlushDBAsync flushes Redis database asynchronously
 func (w *RedisWrapper) FlushDBAsync() (string, error) {
 	result := w.client.FlushDBAsync()
 	return result.Result()

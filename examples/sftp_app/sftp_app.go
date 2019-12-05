@@ -15,13 +15,13 @@ import (
 	"time"
 )
 
-const ENV_DIR = "../../.env"
-const STREAM = "example-stream"
-const CONSUMER_NAME = STREAM + "-consumer"
-const SFTP_DIR = "./foo/bar/"
+const envDir = "../../.env"
+const stream = "example-stream"
+const consumerName = stream + "-consumer"
+const sftpDir = "./foo/bar/"
 
 func main() {
-	utils.LoadEnvFile(ENV_DIR, os.Getenv("ENV"))
+	utils.LoadEnvFile(envDir, os.Getenv("ENV"))
 
 	fileChan := make(chan map[string]interface{})
 	go func() {
@@ -51,7 +51,7 @@ func main() {
 
 		tmpReadFiles := make([]os.FileInfo, 0)
 		for {
-			dir, err := sftpConn.Client.ReadDir(SFTP_DIR)
+			dir, err := sftpConn.Client.ReadDir(sftpDir)
 			if err != nil {
 				log.Fatalf("Cannot read dir #%v", err)
 			}
@@ -60,7 +60,7 @@ func main() {
 
 				for _, file := range dir {
 					if !stringInSlice(file.Name(), tmpReadFiles) {
-						fHandler, err := sftpConn.Client.Open(SFTP_DIR + file.Name())
+						fHandler, err := sftpConn.Client.Open(sftpDir + file.Name())
 						if err != nil {
 							log.Printf("Cannot read file %s #%v", file.Name(), err)
 						} else {
@@ -82,8 +82,8 @@ func main() {
 			Port: uint16(redisPort),
 			DB:   uint8(redisDb),
 		},
-		STREAM,
-		CONSUMER_NAME,
+		stream,
+		consumerName,
 	)
 	defer func() {
 		err := redisCli.Close()

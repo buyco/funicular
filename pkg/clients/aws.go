@@ -12,20 +12,24 @@ import (
 	"sync"
 )
 
+// NewAWSConfig is AWS Config constructor
 func NewAWSConfig() *aws.Config {
 	return aws.NewConfig()
 }
 
+// NewAWSSession is AWS Session constructor
 func NewAWSSession(config *aws.Config) *session.Session {
 	return session.Must(session.NewSession(config))
 }
 
+// NewS3Client is AWS S3 constructor
 func NewS3Client(session *session.Session) *s3.S3 {
 	return s3.New(session)
 }
 
 //------------------------------------------------------------------------------
 
+// AWSManager is a struct to manage AWS SDK
 type AWSManager struct {
 	session      *session.Session
 	disconnected chan bool
@@ -33,6 +37,7 @@ type AWSManager struct {
 	S3Manager    *S3Manager
 }
 
+// NewAWSManager is AWSManager constructor
 func NewAWSManager(session *session.Session) *AWSManager {
 	return &AWSManager{
 		session:   session,
@@ -42,6 +47,7 @@ func NewAWSManager(session *session.Session) *AWSManager {
 
 //------------------------------------------------------------------------------
 
+// S3Manager is a struct to control S3 client
 type S3Manager struct {
 	session *session.Session
 	client  *s3.S3
@@ -49,6 +55,7 @@ type S3Manager struct {
 	sync.Mutex
 }
 
+// NewS3Manager is a S3Manager constructor
 func NewS3Manager(session *session.Session) *S3Manager {
 	return &S3Manager{
 		client: NewS3Client(session),
@@ -56,6 +63,7 @@ func NewS3Manager(session *session.Session) *S3Manager {
 	}
 }
 
+// Add is used to add a bucket to the manager
 func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 	sm.Lock()
 	defer sm.Unlock()
@@ -67,7 +75,8 @@ func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 
 //------------------------------------------------------------------------------
 
-// Storage Layer interface
+// StorageAccessLayer is a common interface for AWS storage
+// Specific to S3 for now...
 type StorageAccessLayer interface {
 	Upload(path string, filename string, data io.Reader) (string, error)
 	Download(path string, filename string, data io.WriterAt) (int64, error)
@@ -75,7 +84,7 @@ type StorageAccessLayer interface {
 	Delete(path string, files ...string) (*s3.DeleteObjectsOutput, error)
 }
 
-// S3 Adapter
+// S3Wrapper is a S3 Adapter
 type S3Wrapper struct {
 	bucketName string
 	uploader   *s3manager.Uploader
@@ -84,6 +93,7 @@ type S3Wrapper struct {
 	reader     func(input *s3.ListObjectsV2Input) (*s3.ListObjectsV2Output, error)
 }
 
+// NewS3Wrapper is S3Wrapper struct constructor
 func NewS3Wrapper(bucketName string, s3Client *s3.S3) *S3Wrapper {
 	uploader := s3manager.NewUploaderWithClient(s3Client)
 	downloader := s3manager.NewDownloaderWithClient(s3Client)
@@ -98,6 +108,7 @@ func NewS3Wrapper(bucketName string, s3Client *s3.S3) *S3Wrapper {
 	}
 }
 
+// Upload pushes a file to S3
 func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader) (string, error) {
 	upParams := &s3manager.UploadInput{
 		Bucket: aws.String(s3w.bucketName),
@@ -112,6 +123,7 @@ func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader) (stri
 	return location, err
 }
 
+// Download fetches a file from S3
 func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (int64, error) {
 	downParams := &s3.GetObjectInput{
 		Bucket: aws.String(s3w.bucketName),
@@ -125,6 +137,7 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (
 	return result, err
 }
 
+// Delete drops files from S3
 func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjectsOutput, error) {
 	var objects []*s3.ObjectIdentifier
 	for _, file := range filename {
@@ -160,6 +173,7 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 	return result, err
 }
 
+// Read gets file content from S3
 func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
 	readParams := &s3.ListObjectsV2Input{
 		Bucket:  aws.String(s3w.bucketName),

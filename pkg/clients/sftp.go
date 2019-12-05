@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// NewSSHConfig is SSH ClientConfig constructor
 func NewSSHConfig(user string, password string) *ssh.ClientConfig {
 	return &ssh.ClientConfig{
 		User:            user,
@@ -21,6 +22,7 @@ func NewSSHConfig(user string, password string) *ssh.ClientConfig {
 	}
 }
 
+// NewSSHClient is SSH client constructor
 func NewSSHClient(host string, port uint32, sshConfig *ssh.ClientConfig) (*ssh.Client, error) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 	conn, err := ssh.Dial("tcp", addr, sshConfig)
@@ -32,6 +34,7 @@ func NewSSHClient(host string, port uint32, sshConfig *ssh.ClientConfig) (*ssh.C
 	return conn, err
 }
 
+// NewSFTPClient is SFTP client constructor
 func NewSFTPClient(sshClient *ssh.Client) (*sftp.Client, error) {
 	client, err := sftp.NewClient(sshClient)
 	if err != nil {
@@ -43,7 +46,7 @@ func NewSFTPClient(sshClient *ssh.Client) (*sftp.Client, error) {
 
 //------------------------------------------------------------------------------
 
-// Manager SFTP connections structure
+// SFTPManager is a struct to manage SFTP connections
 type SFTPManager struct {
 	host      string
 	port      uint32
@@ -55,7 +58,7 @@ type SFTPManager struct {
 	sync.Mutex
 }
 
-// SFTP Manager Construct
+// NewSFTPManager is SFTPManager constructor
 func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, logger *logrus.Logger) *SFTPManager {
 	return &SFTPManager{
 		host:      host,
@@ -66,6 +69,7 @@ func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, logge
 	}
 }
 
+// AddClient adds a new SFTP client in pool
 func (sm *SFTPManager) AddClient() (*SFTPWrapper, error) {
 	sm.Lock()
 	defer sm.Unlock()
@@ -79,6 +83,7 @@ func (sm *SFTPManager) AddClient() (*SFTPWrapper, error) {
 	return sftpStrut, err
 }
 
+// Close closes all SFTP connections
 func (sm *SFTPManager) Close() error {
 	if len(sm.Conns) == 0 {
 		return utils.ErrorPrint("no SFTP connections to close")
@@ -156,7 +161,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 
 //------------------------------------------------------------------------------
 
-// SFTP connection (with clients)
+// SFTPWrapper is SFTP client wrapper struct
 type SFTPWrapper struct {
 	sync.Mutex
 	connection *ssh.Client
@@ -166,7 +171,7 @@ type SFTPWrapper struct {
 	reconnects uint64
 }
 
-// SFTP Wrapper Construct
+// NewSFTPWrapper is SFTPWrapper constructor
 func NewSFTPWrapper(sshClient *ssh.Client, sftpClient *sftp.Client) *SFTPWrapper {
 	return &SFTPWrapper{
 		connection: sshClient,
@@ -177,7 +182,7 @@ func NewSFTPWrapper(sshClient *ssh.Client, sftpClient *sftp.Client) *SFTPWrapper
 	}
 }
 
-// SFTP Wrapper Close connection => chan notify ssh connection to close
+// Close closes connection from SFTP => chan notify ssh connection to close
 func (s *SFTPWrapper) Close() error {
 	s.Lock()
 	defer s.Unlock()
@@ -187,9 +192,8 @@ func (s *SFTPWrapper) Close() error {
 	var err = s.Client.Close()
 	if err != nil {
 		return utils.ErrorPrintf("unable to close ftp connection: %v", err)
-	} else {
-		s.shutdown <- true
-		s.closed = true
 	}
+	s.shutdown <- true
+	s.closed = true
 	return s.Client.Wait()
 }
