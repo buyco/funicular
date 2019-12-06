@@ -1,6 +1,12 @@
 CHANGE LOG
 ===================
 
+# [v0.1.15](https://github.com/buyco/funicular/tree/v0.1.15)
+
+* Update Keel to v0.1.0
+* Add comments on code to satisfy golint (we need more documentation)
+* Change licence, run gofmt and linter on project
+
 # [v0.1.14](https://github.com/buyco/funicular/tree/v0.1.14)
 
 * Update Keel dep to v0.0.4
