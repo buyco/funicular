@@ -1,7 +1,7 @@
-package clients_test
+package client_test
 
 import (
-	. "github.com/buyco/funicular/pkg/clients"
+	. "github.com/buyco/funicular/pkg/client"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"time"

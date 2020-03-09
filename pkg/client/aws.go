@@ -1,4 +1,4 @@
-package clients
+package client
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/buyco/keel/pkg/utils"
+	"github.com/buyco/keel/pkg/helper"
 	"io"
 	"sync"
 )
@@ -131,7 +131,7 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (
 	}
 	err := downParams.Validate()
 	if err != nil {
-		return 0, utils.ErrorPrintf("Download params malformed: %v", err)
+		return 0, helper.ErrorPrintf("Download params malformed: %v", err)
 	}
 	result, err := s3w.downloader.Download(data, downParams)
 	return result, err
@@ -152,7 +152,7 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 	}
 	err := input.Validate()
 	if err != nil {
-		return nil, utils.ErrorPrintf("Delete params malformed: %v", err)
+		return nil, helper.ErrorPrintf("Delete params malformed: %v", err)
 	}
 
 	result, err := s3w.deleter(input)
@@ -160,14 +160,14 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				return nil, utils.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
+				return nil, helper.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
 			case s3.ErrCodeNoSuchKey:
-				return nil, utils.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchKey, aerr.Error()))
+				return nil, helper.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchKey, aerr.Error()))
 			default:
 				return nil, aerr
 			}
 		} else {
-			return nil, utils.ErrorPrint(aerr.Error())
+			return nil, helper.ErrorPrint(aerr.Error())
 		}
 	}
 	return result, err
@@ -185,7 +185,7 @@ func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListO
 	}
 	err := readParams.Validate()
 	if err != nil {
-		return nil, utils.ErrorPrintf("Read params malformed: %v", err)
+		return nil, helper.ErrorPrintf("Read params malformed: %v", err)
 	}
 
 	result, err := s3w.reader(readParams)
@@ -193,13 +193,13 @@ func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListO
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				return nil, utils.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
+				return nil, helper.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
 
 			default:
 				return nil, aerr
 			}
 		} else {
-			return nil, utils.ErrorPrint(aerr.Error())
+			return nil, helper.ErrorPrint(aerr.Error())
 		}
 	}
 	return result, err

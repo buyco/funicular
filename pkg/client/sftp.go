@@ -1,8 +1,8 @@
-package clients
+package client
 
 import (
 	"fmt"
-	"github.com/buyco/keel/pkg/utils"
+	"github.com/buyco/keel/pkg/helper"
 	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
@@ -28,7 +28,7 @@ func NewSSHClient(host string, port uint32, sshConfig *ssh.ClientConfig) (*ssh.C
 	conn, err := ssh.Dial("tcp", addr, sshConfig)
 
 	if err != nil {
-		err = utils.ErrorPrintf("unable to connect to [%s]: %v", addr, err)
+		err = helper.ErrorPrintf("unable to connect to [%s]: %v", addr, err)
 		return nil, err
 	}
 	return conn, err
@@ -38,7 +38,7 @@ func NewSSHClient(host string, port uint32, sshConfig *ssh.ClientConfig) (*ssh.C
 func NewSFTPClient(sshClient *ssh.Client) (*sftp.Client, error) {
 	client, err := sftp.NewClient(sshClient)
 	if err != nil {
-		err = utils.ErrorPrintf("unable to start sftp subsytem: %v", err)
+		err = helper.ErrorPrintf("unable to start sftp subsytem: %v", err)
 		return nil, err
 	}
 	return client, err
@@ -86,7 +86,7 @@ func (sm *SFTPManager) AddClient() (*SFTPWrapper, error) {
 // Close closes all SFTP connections
 func (sm *SFTPManager) Close() error {
 	if len(sm.Conns) == 0 {
-		return utils.ErrorPrint("no SFTP connections to close")
+		return helper.ErrorPrint("no SFTP connections to close")
 	}
 	for _, conn := range sm.Conns {
 		if err := conn.Close(); err != nil {
@@ -187,11 +187,11 @@ func (s *SFTPWrapper) Close() error {
 	s.Lock()
 	defer s.Unlock()
 	if s.closed {
-		return utils.ErrorPrint("Connection was already closed")
+		return helper.ErrorPrint("Connection was already closed")
 	}
 	var err = s.Client.Close()
 	if err != nil {
-		return utils.ErrorPrintf("unable to close ftp connection: %v", err)
+		return helper.ErrorPrintf("unable to close ftp connection: %v", err)
 	}
 	s.shutdown <- true
 	s.closed = true

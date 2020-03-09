@@ -1,9 +1,9 @@
-package clients
+package client
 
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/buyco/keel/pkg/utils"
+	"github.com/buyco/keel/pkg/helper"
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 	"math/rand"
@@ -52,7 +52,7 @@ func (rw *RedisManager) AddClient(category string, channel string, consumerName 
 	rw.Lock()
 	defer rw.Unlock()
 	if category == "" {
-		return nil, utils.ErrorPrint("category must be filled")
+		return nil, helper.ErrorPrint("category must be filled")
 	}
 	if channel == "" {
 		channel = category
@@ -84,12 +84,12 @@ func (rw *RedisManager) Close() error {
 				}
 				err = client.Close()
 				if err != nil {
-					return utils.ErrorPrintf("an error occurred while closing client connection pool: %v", err)
+					return helper.ErrorPrintf("an error occurred while closing client connection pool: %v", err)
 				}
 			}
 		}
 	} else {
-		err = utils.ErrorPrint("manager have no clients to close")
+		err = helper.ErrorPrint("manager have no clients to close")
 	}
 	return err
 }
@@ -118,7 +118,7 @@ type RedisWrapper struct {
 // NewRedisWrapper is RedisWrapper constructor
 func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*RedisWrapper, error) {
 	if channel == "" {
-		return nil, utils.ErrorPrint("channel must be filled")
+		return nil, helper.ErrorPrint("channel must be filled")
 	}
 	if consumerName == "" {
 		h := sha256.New()
@@ -139,7 +139,7 @@ func NewRedisWrapper(config RedisConfig, channel string, consumerName string) (*
 // Reconnect reconnects client to Redis
 func (w *RedisWrapper) Reconnect() error {
 	if !w.Closed {
-		return utils.ErrorPrint("client is not closed")
+		return helper.ErrorPrint("client is not closed")
 	}
 
 	w.Lock()

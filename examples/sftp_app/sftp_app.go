@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/buyco/funicular/pkg/clients"
-	"github.com/buyco/keel/pkg/utils"
+	"github.com/buyco/funicular/pkg/client"
+	"github.com/buyco/keel/pkg/helper"
 	"github.com/sirupsen/logrus"
 
 	"fmt"
@@ -15,13 +15,12 @@ import (
 	"time"
 )
 
-const envDir = "../../.env"
 const stream = "example-stream"
 const consumerName = stream + "-consumer"
 const sftpDir = "./foo/bar/"
 
 func main() {
-	utils.LoadEnvFile(envDir, os.Getenv("ENV"))
+	helper.LoadEnvFile(os.Getenv("ENV"))
 
 	fileChan := make(chan map[string]interface{})
 	go func() {
@@ -29,10 +28,10 @@ func main() {
 		if portInt, err := strconv.Atoi(os.Getenv("SFTP_PORT")); err == nil {
 			port = uint32(portInt)
 		}
-		sftpManager := clients.NewSFTPManager(
+		sftpManager := client.NewSFTPManager(
 			os.Getenv("SFTP_HOST"),
 			port,
-			clients.NewSSHConfig(
+			client.NewSSHConfig(
 				os.Getenv("SFTP_USER"),
 				os.Getenv("SFTP_PASSWORD"),
 			),
@@ -76,8 +75,8 @@ func main() {
 
 	redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
 	redisDb, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
-	redisCli, _ := clients.NewRedisWrapper(
-		clients.RedisConfig{
+	redisCli, _ := client.NewRedisWrapper(
+		client.RedisConfig{
 			Host: os.Getenv("REDIS_HOST"),
 			Port: uint16(redisPort),
 			DB:   uint8(redisDb),
