@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.2.0](https://github.com/buyco/funicular/tree/v0.2.0)
+
+* Update deps and refactoring packages name
+
 # [v0.1.15](https://github.com/buyco/funicular/tree/v0.1.15)
 
 * Update Keel to v0.1.0
