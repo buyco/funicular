@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.3.0](https://github.com/buyco/funicular/tree/v0.3.0)
+
+* Move to sync.Pool for SFTP Clients
+
 # [v0.2.0](https://github.com/buyco/funicular/tree/v0.2.0)
 
 * Update deps and refactoring packages name
