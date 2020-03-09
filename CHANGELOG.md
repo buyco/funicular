@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.3.1](https://github.com/buyco/funicular/tree/v0.3.1)
+
+* Add a PutClient function to SFTP Manager
+
 # [v0.3.0](https://github.com/buyco/funicular/tree/v0.3.0)
 
 * Move to sync.Pool for SFTP Clients
