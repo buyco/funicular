@@ -37,7 +37,11 @@ func main() {
 			),
 			logrus.New(),
 		)
-		sftpConn, err := sftpManager.AddClient()
+		err := sftpManager.AddClient()
+		if err != nil {
+			log.Fatalf("Error #%v", err)
+		}
+		sftpConn, err := sftpManager.GetClient()
 		if err != nil {
 			log.Fatalf("Error #%v", err)
 		}

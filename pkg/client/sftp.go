@@ -52,7 +52,7 @@ type SFTPManager struct {
 	port      uint32
 	user      string
 	password  string
-	Conns     []*SFTPWrapper
+	conns     *sync.Pool
 	sshConfig *ssh.ClientConfig
 	logger    *logrus.Logger
 	sync.Mutex
@@ -63,37 +63,44 @@ func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, logge
 	return &SFTPManager{
 		host:      host,
 		port:      port,
-		Conns:     make([]*SFTPWrapper, 0),
+		conns:     &sync.Pool{},
 		sshConfig: sshConfig,
 		logger:    logger,
 	}
 }
 
 // AddClient adds a new SFTP client in pool
-func (sm *SFTPManager) AddClient() (*SFTPWrapper, error) {
-	sm.Lock()
-	defer sm.Unlock()
+func (sm *SFTPManager) AddClient() error {
 	sshConn, sftpConn, err := sm.newConnections()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	sftpStrut := NewSFTPWrapper(sshConn, sftpConn)
 	go sm.reconnect(sftpStrut)
-	sm.Conns = append(sm.Conns, sftpStrut)
-	return sftpStrut, err
+	sm.conns.Put(sftpStrut)
+	return nil
+}
+
+// GetClient get a new SFTP client in pool
+func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
+	sftpClient := sm.conns.Get()
+	if sftpClient == nil {
+		return nil, helper.ErrorPrint("No SFTP client available")
+	}
+	return sftpClient.(*SFTPWrapper), nil
 }
 
 // Close closes all SFTP connections
 func (sm *SFTPManager) Close() error {
-	if len(sm.Conns) == 0 {
-		return helper.ErrorPrint("no SFTP connections to close")
-	}
-	for _, conn := range sm.Conns {
-		if err := conn.Close(); err != nil {
+	for {
+		conn := sm.conns.Get()
+		if conn == nil {
+			return nil
+		}
+		if err := conn.(*SFTPWrapper).Close(); err != nil {
 			return err
 		}
 	}
-	return nil
 }
 
 // Private method to create ssh and sftp clients
