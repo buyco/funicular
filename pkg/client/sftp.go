@@ -90,6 +90,11 @@ func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 	return sftpClient.(*SFTPWrapper), nil
 }
 
+// PutClient add an existing SFTP client in pool
+func (sm *SFTPManager) PutClient(client *SFTPWrapper) {
+	sm.conns.Put(client)
+}
+
 // Close closes all SFTP connections
 func (sm *SFTPManager) Close() error {
 	for {
