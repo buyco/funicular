@@ -1,8 +1,8 @@
-package clients_test
+package client_test
 
 import (
-	"github.com/buyco/funicular/internal/mocks"
-	. "github.com/buyco/funicular/pkg/clients"
+	"github.com/buyco/funicular/internal/mock"
+	. "github.com/buyco/funicular/pkg/client"
 	"io"
 
 	"github.com/aws/aws-sdk-go/aws"

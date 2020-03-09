@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/buyco/funicular/pkg/clients"
-	"github.com/buyco/keel/pkg/utils"
+	"github.com/buyco/funicular/pkg/client"
+	"github.com/buyco/keel/pkg/helper"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/go-redis/redis"
@@ -13,21 +13,20 @@ import (
 	"time"
 )
 
-const envDir = "../../.env"
 const stream = "example-stream"
 const consumerName = stream + "-consumer"
 const bucketName = "buyco-foo-bar"
 const storePath = "/foo/bar/"
 
 func main() {
-	utils.LoadEnvFile(envDir, os.Getenv("ENV"))
+	helper.LoadEnvFile(os.Getenv("ENV"))
 	fileChan := make(chan redis.XMessage)
 	s3Chan := make(chan string)
 	go func() {
 		redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
 		redisDb, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
-		redisCli, wrapperErr := clients.NewRedisWrapper(
-			clients.RedisConfig{
+		redisCli, wrapperErr := client.NewRedisWrapper(
+			client.RedisConfig{
 				Host: os.Getenv("REDIS_HOST"),
 				Port: uint16(redisPort),
 				DB:   uint8(redisDb),
@@ -79,7 +78,7 @@ func main() {
 	var awsConfig = &aws.Config{
 		MaxRetries: aws.Int(2),
 	}
-	awsManager := clients.NewAWSManager(clients.NewAWSSession(awsConfig))
+	awsManager := client.NewAWSManager(client.NewAWSSession(awsConfig))
 	s3Bucket := awsManager.S3Manager.Add(bucketName)
 	for {
 		select {

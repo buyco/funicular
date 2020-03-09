@@ -8,7 +8,7 @@ Simple facades to create commands.
 ## Run commands
 
 ```bash
-$ export GO111MODULE=on
+$ export GO111MODULE=on # Optional from Go 1.14.x
 $ go get ./...
 $ cp .env-example .env
 $ cd cmd/<cmd>
@@ -18,10 +18,10 @@ $ go build ./<cmd>
 ## Run tests locally
 
 ```bash
-$ export GO111MODULE=on
+$ export GO111MODULE=on # Optional from Go 1.14.x
 $ go get ./...
 $ go get github.com/onsi/gomega
-$ go install github.com/onsi/ginkgo/ginkgo
-$ go install github.com/joho/godotenv/cmd/godotenv
+$ go get github.com/onsi/ginkgo/ginkgo
+$ GO111MODULE=off go get github.com/joho/godotenv/cmd/godotenv
 $ godotenv -f <env_file> ginkgo -r --randomizeAllSpecs --randomizeSuites --race --trace
 ```
