@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/aws/aws-sdk-go v1.19.49
 	github.com/buyco/keel v0.4.0
-	github.com/go-redis/redis v6.15.2+incompatible
+	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/golang/mock v1.3.1
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect

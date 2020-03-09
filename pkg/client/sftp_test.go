@@ -31,19 +31,20 @@ var _ = Describe("Sftp", func() {
 			})
 
 			It("should contain zero clients", func() {
-				Expect(manager.Conns).To(HaveLen(0))
+				sftpCli, err := manager.GetClient()
+				Expect(sftpCli).To(BeNil())
+				Expect(err).To(HaveOccurred())
 			})
 
-			It("should fail close without clients", func() {
+			It("should not fail to close without clients", func() {
 				err := manager.Close()
-				Expect(err).To(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 
 		It("should fail to add new client", func() {
-			sftpWrapper, addCliErr := manager.AddClient()
+			addCliErr := manager.AddClient()
 			Expect(addCliErr).To(HaveOccurred())
-			Expect(sftpWrapper).To(BeNil())
 		})
 	})
 })
