@@ -51,7 +51,7 @@ func NewAWSManager(session *session.Session) *AWSManager {
 type S3Manager struct {
 	session *session.Session
 	client  *s3.S3
-	S3      []StorageAccessLayer
+	S3      map[string]StorageAccessLayer
 	sync.Mutex
 }
 
@@ -59,7 +59,7 @@ type S3Manager struct {
 func NewS3Manager(session *session.Session) *S3Manager {
 	return &S3Manager{
 		client: NewS3Client(session),
-		S3:     make([]StorageAccessLayer, 0),
+		S3:     make(map[string]StorageAccessLayer, 0),
 	}
 }
 
@@ -67,10 +67,12 @@ func NewS3Manager(session *session.Session) *S3Manager {
 func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 	sm.Lock()
 	defer sm.Unlock()
-	s3Wrapper := NewS3Wrapper(bucketName, sm.client)
-	sm.S3 = append(sm.S3, s3Wrapper)
+	if sm.S3[bucketName] == nil {
+		s3Wrapper := NewS3Wrapper(bucketName, sm.client)
+		sm.S3[bucketName] = s3Wrapper
+	}
 
-	return s3Wrapper
+	return sm.S3[bucketName].(*S3Wrapper)
 }
 
 //------------------------------------------------------------------------------
