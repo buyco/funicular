@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/buyco/funicular/pkg/client"
 	"github.com/buyco/keel/pkg/helper"
+	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 
 	"fmt"
@@ -16,7 +17,7 @@ import (
 )
 
 const stream = "example-stream"
-const consumerName = stream + "-consumer"
+const category = stream + "-cat"
 const sftpDir = "./foo/bar/"
 
 func main() {
@@ -79,15 +80,16 @@ func main() {
 
 	redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
 	redisDb, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
-	redisCli, _ := client.NewRedisWrapper(
+	redisManager := client.NewRedisManager(
 		client.RedisConfig{
 			Host: os.Getenv("REDIS_HOST"),
 			Port: uint16(redisPort),
 			DB:   uint8(redisDb),
 		},
-		stream,
-		consumerName,
+		logrus.New(),
 	)
+	redisManager.AddClient(category)
+	redisCli := redisManager.Clients[stream]
 	defer func() {
 		err := redisCli.Close()
 		if err != nil {
@@ -105,7 +107,13 @@ func main() {
 				log.Printf("Cannot read file data %s #%v", fileMap["fileInfo"].(os.FileInfo).Name(), err)
 			} else {
 				msgData := map[string]interface{}{"filename": fileMap["fileInfo"].(os.FileInfo).Name(), "fileData": fByteData}
-				_, err = redisCli.AddMessage(msgData)
+
+				_, err = redisCli.XAdd(
+					&redis.XAddArgs{
+						Stream:       stream,
+						Values:       msgData,
+					},
+				).Result()
 				if err != nil {
 					log.Printf("Cannot send message: %v", err)
 				}

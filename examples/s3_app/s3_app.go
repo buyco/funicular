@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/buyco/funicular/pkg/client"
 	"github.com/buyco/keel/pkg/helper"
+	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/go-redis/redis"
@@ -14,7 +15,7 @@ import (
 )
 
 const stream = "example-stream"
-const consumerName = stream + "-consumer"
+const category = stream + "-cat"
 const bucketName = "buyco-foo-bar"
 const storePath = "/foo/bar/"
 
@@ -25,18 +26,16 @@ func main() {
 	go func() {
 		redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
 		redisDb, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
-		redisCli, wrapperErr := client.NewRedisWrapper(
+		redisManager := client.NewRedisManager(
 			client.RedisConfig{
 				Host: os.Getenv("REDIS_HOST"),
 				Port: uint16(redisPort),
 				DB:   uint8(redisDb),
 			},
-			stream,
-			consumerName,
+			logrus.New(),
 		)
-		if wrapperErr != nil {
-			log.Fatalf("Redis read error: %v", wrapperErr)
-		}
+		redisManager.AddClient(category)
+		redisCli := redisManager.Clients[category]
 
 		defer func() {
 			err := redisCli.Close()
@@ -49,7 +48,7 @@ func main() {
 			for {
 				select {
 				case filename := <-s3Chan:
-					_, err := redisCli.DeleteMessage(filename)
+					_, err := redisCli.XDel(stream, filename).Result()
 					if err != nil {
 						log.Fatalf("Failed to delete stream message: %v", err)
 					}
@@ -59,7 +58,12 @@ func main() {
 		}()
 		lastID := "$"
 		for {
-			vals, err := redisCli.ReadMessage(lastID, 5, 3000*time.Millisecond)
+			rArgs := &redis.XReadArgs{
+				Streams: []string{ stream, lastID },
+				Count:   5,
+				Block:   3000*time.Millisecond,
+			}
+			vals, err := redisCli.XRead(rArgs).Result()
 			if err != nil {
 				log.Printf("Redis read error: %v", err)
 			} else {
