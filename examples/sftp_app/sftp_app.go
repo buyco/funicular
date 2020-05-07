@@ -17,7 +17,6 @@ import (
 )
 
 const stream = "example-stream"
-const consumerName = stream + "-consumer"
 const category = stream + "-cat"
 const sftpDir = "./foo/bar/"
 
