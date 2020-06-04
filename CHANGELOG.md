@@ -1,7 +1,11 @@
 CHANGE LOG
 ===================
 
-# [v0.4.0](https://github.com/buyco/funicular/tree/v0.4)
+# [v0.4.1](https://github.com/buyco/funicular/tree/v0.4.1)
+
+* Fix go-redis pkg dependency in go.mod
+
+# [v0.4.0](https://github.com/buyco/funicular/tree/v0.4.0)
 
 * Fix S3 manager and delete RedisWrapper to use redis client instead (#6)
 
