@@ -4,9 +4,8 @@ import (
 	"github.com/buyco/funicular/pkg/client"
 	"github.com/buyco/keel/pkg/helper"
 	"github.com/sirupsen/logrus"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"log"
 	"os"
 	"strconv"

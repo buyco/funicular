@@ -2,7 +2,7 @@ package client
 
 import (
 	"github.com/buyco/keel/pkg/helper"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/sirupsen/logrus"
 	"net"
 	"strconv"
