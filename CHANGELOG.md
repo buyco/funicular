@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.4.0](https://github.com/buyco/funicular/tree/v0.4)
+
+* Fix S3 manager and delete RedisWrapper to use redis client instead (#6)
+
 # [v0.3.1](https://github.com/buyco/funicular/tree/v0.3.1)
 
 * Add a PutClient function to SFTP Manager
