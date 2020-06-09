@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.5.0](https://github.com/buyco/funicular/tree/v0.5.0)
+
+* Replace sync.Pool to create our own Pool of objects (#8)
+
 # [v0.4.1](https://github.com/buyco/funicular/tree/v0.4.1)
 
 * Fix go-redis pkg dependency in go.mod
