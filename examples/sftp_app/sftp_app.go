@@ -36,6 +36,7 @@ func main() {
 				os.Getenv("SFTP_USER"),
 				os.Getenv("SFTP_PASSWORD"),
 			),
+			2,
 			logrus.New(),
 		)
 		err := sftpManager.AddClient()

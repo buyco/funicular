@@ -22,7 +22,7 @@ var _ = Describe("Sftp", func() {
 
 	Describe("Using Manager", func() {
 
-		manager = NewSFTPManager("localhost", 22, config, logrus.New())
+		manager = NewSFTPManager("localhost", 22, config, 1, logrus.New())
 
 		Context("From constructor function", func() {
 
