@@ -52,21 +52,26 @@ type SFTPManager struct {
 	port      uint32
 	user      string
 	password  string
-	conns     *sync.Pool
+	pool      *Pool
 	sshConfig *ssh.ClientConfig
 	logger    *logrus.Logger
 	sync.Mutex
 }
 
 // NewSFTPManager is SFTPManager constructor
-func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, logger *logrus.Logger) *SFTPManager {
+func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, maxCap uint, logger *logrus.Logger) *SFTPManager {
 	return &SFTPManager{
 		host:      host,
 		port:      port,
-		conns:     &sync.Pool{},
+		pool:      NewPool(maxCap, nil, logger),
 		sshConfig: sshConfig,
 		logger:    logger,
 	}
+}
+
+// SetPoolFactory adds func factory to pool
+func (sm *SFTPManager) SetPoolFactory(factory Factory) {
+	sm.pool.SetFactory(factory)
 }
 
 // AddClient adds a new SFTP client in pool
@@ -75,15 +80,15 @@ func (sm *SFTPManager) AddClient() error {
 	if err != nil {
 		return err
 	}
-	sftpStrut := NewSFTPWrapper(sshConn, sftpConn)
-	go sm.reconnect(sftpStrut)
-	sm.conns.Put(sftpStrut)
+	sftpStruct := NewSFTPWrapper(sshConn, sftpConn)
+	go sm.reconnect(sftpStruct)
+	sm.pool.Put(sftpStruct)
 	return nil
 }
 
 // GetClient get a new SFTP client in pool
 func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
-	sftpClient := sm.conns.Get()
+	sftpClient := sm.pool.Get()
 	if sftpClient == nil {
 		return nil, helper.ErrorPrint("No SFTP client available")
 	}
@@ -92,13 +97,13 @@ func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 
 // PutClient add an existing SFTP client in pool
 func (sm *SFTPManager) PutClient(client *SFTPWrapper) {
-	sm.conns.Put(client)
+	sm.pool.Put(client)
 }
 
 // Close closes all SFTP connections
 func (sm *SFTPManager) Close() error {
 	for {
-		conn := sm.conns.Get()
+		conn := sm.pool.Get()
 		if conn == nil {
 			return nil
 		}
