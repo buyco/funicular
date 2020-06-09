@@ -26,25 +26,37 @@ var _ = Describe("Sftp", func() {
 
 		Context("From constructor function", func() {
 
-			It("should create a valid instance", func() {
+			It("creates a valid instance", func() {
 				Expect(manager).To(BeAssignableToTypeOf(&SFTPManager{}))
 			})
 
-			It("should contain zero clients", func() {
+			It("contains zero clients", func() {
 				sftpCli, err := manager.GetClient()
 				Expect(sftpCli).To(BeNil())
 				Expect(err).To(HaveOccurred())
 			})
 
-			It("should not fail to close without clients", func() {
+			It("does not fail to close without clients", func() {
 				err := manager.Close()
 				Expect(err).ToNot(HaveOccurred())
 			})
+
+			It("adds a Factory to pool", func() {
+				manager.SetPoolFactory(func() interface{} { return &SFTPWrapper{}})
+				Expect(manager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))
+			})
+
 		})
 
-		It("should fail to add new client", func() {
+		It("fails to add new client", func() {
 			addCliErr := manager.AddClient()
 			Expect(addCliErr).To(HaveOccurred())
+		})
+
+		It("fails to get a client", func() {
+			client, getCliErr := manager.GetClient()
+			Expect(client).To(BeNil())
+			Expect(getCliErr).To(HaveOccurred())
 		})
 	})
 })
