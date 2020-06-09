@@ -42,8 +42,9 @@ var _ = Describe("Sftp", func() {
 			})
 
 			It("adds a Factory to pool", func() {
-				manager.SetPoolFactory(func() interface{} { return &SFTPWrapper{}})
-				Expect(manager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))
+				factoryManager := NewSFTPManager("localhost", 22, config, 1, logrus.New())
+				factoryManager.SetPoolFactory(func() interface{} { return &SFTPWrapper{}})
+				Expect(factoryManager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))
 			})
 
 		})
