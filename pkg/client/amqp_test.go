@@ -5,32 +5,60 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
-	"time"
 )
 
 var _ = Describe("AMQP", func() {
 
 	Describe("Using Manager", func() {
+		var manager *AMQPManager
+		config := NewAMQPManagerConfig("localhost:5672", "guest", "guest", nil)
+		BeforeEach(func() {
+			var err error
+			manager, err = NewAMQPManager(config, 22, logrus.New())
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 
 		Context("From constructor function", func() {
-			It("fails to connect to RabbitMQ", func() {
-				config := NewAMQPManagerConfig("localhost:5672", "guest", "guest", nil)
-				manager, err := NewAMQPManager(config, 22, logrus.New())
-				Expect(manager).To(BeNil())
+
+			It("creates a valid instance", func() {
+				Expect(manager).To(BeAssignableToTypeOf(&AMQPManager{}))
+			})
+
+			It("contains zero clients", func() {
+				cli, err := manager.GetClient()
+				Expect(cli).To(BeNil())
 				Expect(err).To(HaveOccurred())
+			})
+
+			It("does not fail to close without clients", func() {
+				err := manager.Close()
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("adds a Factory to pool", func() {
+				manager.SetPoolFactory(func() interface{} { return &AMQPWrapper{} })
+				Expect(manager.GetClient()).To(BeAssignableToTypeOf(&AMQPWrapper{}))
 			})
 
 		})
 
-		It("creates an AMQPConfig", func() {
-			config := NewAMQPConfig("/", 12, 2*time.Millisecond)
-			Expect(config).To(BeAssignableToTypeOf(amqp.Config{}))
+		It("adds a new client", func() {
+			addCliErr := manager.AddClient()
+			Expect(addCliErr).ToNot(HaveOccurred())
 		})
 
-		It("creates an AMQPManagerConfig", func() {
-			config := NewAMQPManagerConfig("localhost:5672", "guest", "guest", nil)
-			Expect(config).To(BeAssignableToTypeOf(&AMQPManagerConfig{}))
+		It("puts a client", func() {
+			manager.PutClient(&AMQPWrapper{})
+			client, getCliErr := manager.GetClient()
+			Expect(client).ToNot(BeNil())
+			Expect(getCliErr).ToNot(HaveOccurred())
+		})
+
+		It("fails to get a client", func() {
+			client, getCliErr := manager.GetClient()
+			Expect(client).To(BeNil())
+			Expect(getCliErr).To(HaveOccurred())
 		})
 	})
 })

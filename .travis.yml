@@ -1,4 +1,5 @@
 language: go
+dist: trusty
 
 go:
   - 1.14.x
@@ -6,6 +7,7 @@ go:
 
 services:
   - redis-server
+  - rabbitmq
 
 env:
   global:
