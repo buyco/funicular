@@ -30,7 +30,6 @@ type AMQPManagerConfig struct {
 	config   *amqp.Config
 }
 
-
 // NewAMQPClient is AMQP client constructor
 func NewAMQPManagerConfig(address, user, password string, config *amqp.Config) *AMQPManagerConfig {
 	return &AMQPManagerConfig{
@@ -43,7 +42,7 @@ func NewAMQPManagerConfig(address, user, password string, config *amqp.Config) *
 
 // AMQPManager is a struct to manage AMQP connections
 type AMQPManager struct {
-	config *AMQPManagerConfig
+	config     *AMQPManagerConfig
 	connection *amqp.Connection
 	pool       *Pool
 	shutdown   bool
@@ -113,11 +112,11 @@ func (am *AMQPManager) AddClient() error {
 
 // GetChannel get a new AMQP connection channel in pool
 func (am *AMQPManager) GetClient() (*AMQPWrapper, error) {
-	sftpClient := am.pool.Get()
-	if sftpClient == nil {
+	amqpWrapper := am.pool.Get()
+	if amqpWrapper == nil {
 		return nil, helper.ErrorPrint("no AMQP client available")
 	}
-	return sftpClient.(*AMQPWrapper), nil
+	return amqpWrapper.(*AMQPWrapper), nil
 }
 
 // PutClient add an existing AMQP client in pool
@@ -135,7 +134,7 @@ func (am *AMQPManager) PutClient(client *AMQPWrapper) {
 // Close closes AMQP connection and channels
 func (am *AMQPManager) Close() error {
 	am.shutdown = true
-	err :=  am.connection.Close()
+	err := am.connection.Close()
 	if err != nil {
 		am.shutdown = false
 		return err
@@ -155,7 +154,7 @@ func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
 		am.logger.Debugf("Channel closed, reconnecting: %v", resChan)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
-			newChannel *amqp.Channel
+			newChannel     *amqp.Channel
 			hasReconnected = false
 		)
 		for !hasReconnected {
@@ -227,7 +226,7 @@ func (am *AMQPManager) reconnectConn() {
 // AMQPWrapper is AMQP client wrapper struct
 type AMQPWrapper struct {
 	sync.Mutex
-	Channel     *amqp.Channel
+	Channel    *amqp.Channel
 	Reconnects uint64
 	logger     *logrus.Logger
 }

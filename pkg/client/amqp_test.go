@@ -15,7 +15,7 @@ var _ = Describe("AMQP", func() {
 
 		Context("From constructor function", func() {
 			It("fails to connect to RabbitMQ", func() {
-				config := NewAMQPManagerConfig("localhost:5672", "guest","guest", nil)
+				config := NewAMQPManagerConfig("localhost:5672", "guest", "guest", nil)
 				manager, err := NewAMQPManager(config, 22, logrus.New())
 				Expect(manager).To(BeNil())
 				Expect(err).To(HaveOccurred())
@@ -24,12 +24,12 @@ var _ = Describe("AMQP", func() {
 		})
 
 		It("creates an AMQPConfig", func() {
-			config := NewAMQPConfig("/", 12, 2 * time.Millisecond)
+			config := NewAMQPConfig("/", 12, 2*time.Millisecond)
 			Expect(config).To(BeAssignableToTypeOf(amqp.Config{}))
 		})
 
 		It("creates an AMQPManagerConfig", func() {
-			config := NewAMQPManagerConfig("localhost:5672", "guest","guest", nil)
+			config := NewAMQPManagerConfig("localhost:5672", "guest", "guest", nil)
 			Expect(config).To(BeAssignableToTypeOf(&AMQPManagerConfig{}))
 		})
 	})
