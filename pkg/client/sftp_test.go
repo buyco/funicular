@@ -54,6 +54,14 @@ var _ = Describe("SFTP", func() {
 			Expect(addCliErr).To(HaveOccurred())
 		})
 
+		It("puts a client", func() {
+			putManager := NewSFTPManager("localhost", 22, config, 1, logrus.New())
+			putManager.PutClient(&SFTPWrapper{})
+			client, getCliErr := putManager.GetClient()
+			Expect(client).ToNot(BeNil())
+			Expect(getCliErr).ToNot(HaveOccurred())
+		})
+
 		It("fails to get a client", func() {
 			client, getCliErr := manager.GetClient()
 			Expect(client).To(BeNil())
