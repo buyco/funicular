@@ -165,7 +165,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 			}
 		}
 
-		atomic.AddUint64(&c.reconnects, 1)
+		atomic.AddUint64(&c.Reconnects, 1)
 		c.Lock()
 		c.connection = sshConn
 		c.Client = sftpConn
@@ -185,7 +185,7 @@ type SFTPWrapper struct {
 	Client     *sftp.Client
 	shutdown   chan bool
 	closed     bool
-	reconnects uint64
+	Reconnects uint64
 }
 
 // NewSFTPWrapper is SFTPWrapper constructor
@@ -193,9 +193,9 @@ func NewSFTPWrapper(sshClient *ssh.Client, sftpClient *sftp.Client) *SFTPWrapper
 	return &SFTPWrapper{
 		connection: sshClient,
 		Client:     sftpClient,
-		shutdown:   make(chan bool, 0),
+		shutdown:   make(chan bool, 1),
 		closed:     false,
-		reconnects: 0,
+		Reconnects: 0,
 	}
 }
 

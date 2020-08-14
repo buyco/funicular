@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/buyco/keel/pkg/helper"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -49,10 +50,11 @@ func (p *Pool) Get() (rv interface{}) {
 	}
 }
 
-func (p *Pool) Put(c interface{}) {
+func (p *Pool) Put(c interface{}) error {
 	select {
 	case p.connections <- c:
+		return nil
 	default:
-		p.logger.Print("Pool is full, element will not be added")
+		return helper.ErrorPrint("Pool is full, element will not be added")
 	}
 }
