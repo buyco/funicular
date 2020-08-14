@@ -133,7 +133,7 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (
 	}
 	err := downParams.Validate()
 	if err != nil {
-		return 0, helper.ErrorPrintf("Download params malformed: %v", err)
+		return 0, helper.ErrorPrintf("download params malformed: %v", err)
 	}
 	result, err := s3w.downloader.Download(data, downParams)
 	return result, err
@@ -154,7 +154,7 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 	}
 	err := input.Validate()
 	if err != nil {
-		return nil, helper.ErrorPrintf("Delete params malformed: %v", err)
+		return nil, helper.ErrorPrintf("delete params malformed: %v", err)
 	}
 
 	result, err := s3w.deleter(input)
@@ -187,7 +187,7 @@ func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListO
 	}
 	err := readParams.Validate()
 	if err != nil {
-		return nil, helper.ErrorPrintf("Read params malformed: %v", err)
+		return nil, helper.ErrorPrintf("read params malformed: %v", err)
 	}
 
 	result, err := s3w.reader(readParams)

@@ -90,14 +90,21 @@ func (sm *SFTPManager) AddClient() error {
 func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 	sftpClient := sm.pool.Get()
 	if sftpClient == nil {
-		return nil, helper.ErrorPrint("No SFTP client available")
+		return nil, helper.ErrorPrint("no SFTP client available")
 	}
 	return sftpClient.(*SFTPWrapper), nil
 }
 
 // PutClient add an existing SFTP client in pool
 func (sm *SFTPManager) PutClient(client *SFTPWrapper) {
-	sm.pool.Put(client)
+	err := sm.pool.Put(client)
+	if err != nil {
+		sm.logger.Error(err)
+		err := client.Close()
+		if err != nil {
+			sm.logger.Error(err)
+		}
+	}
 }
 
 // Close closes all SFTP connections
@@ -139,7 +146,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		_ = c.connection.Close()
 		break
 	case res := <-closed:
-		sm.logger.Debugf("Connection closed, reconnecting: %s", res)
+		sm.logger.Debugf("SFTP connection closed, reconnecting: %s", res)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
 			sshConn        *ssh.Client
@@ -161,7 +168,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 				hasReconnected = true
 			case breaker.ErrBreakerOpen:
 			default:
-				sm.logger.Errorf("Failed to reconnect: %v", result)
+				sm.logger.Errorf("SFTP failed to reconnect: %v", result)
 			}
 		}
 
@@ -204,11 +211,11 @@ func (s *SFTPWrapper) Close() error {
 	s.Lock()
 	defer s.Unlock()
 	if s.closed {
-		return helper.ErrorPrint("Connection was already closed")
+		return helper.ErrorPrint("SFTP connection was already closed")
 	}
 	var err = s.Client.Close()
 	if err != nil {
-		return helper.ErrorPrintf("unable to close ftp connection: %v", err)
+		return helper.ErrorPrintf("unable to close sftp connection: %v", err)
 	}
 	s.shutdown <- true
 	s.closed = true

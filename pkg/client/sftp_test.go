@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Sftp", func() {
+var _ = Describe("SFTP", func() {
 
 	var manager *SFTPManager
 	config := &ssh.ClientConfig{

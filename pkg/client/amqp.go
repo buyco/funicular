@@ -45,8 +45,9 @@ func NewAMQPManagerConfig(address, user, password string, config *amqp.Config) *
 type AMQPManager struct {
 	config *AMQPManagerConfig
 	connection *amqp.Connection
-	closedConn chan *amqp.Error
 	pool       *Pool
+	shutdown   bool
+	Reconnects uint64
 	logger     *logrus.Logger
 	sync.Mutex
 }
@@ -83,14 +84,12 @@ func NewAMQPManager(config *AMQPManagerConfig, maxCap uint, logger *logrus.Logge
 	manager := &AMQPManager{
 		config: config,
 		pool:   NewPool(maxCap, nil, logger),
-		closedConn:   make(chan *amqp.Error, 1),
 		logger: logger,
 	}
 	err := manager.newAMQPConnection()
 	if err != nil {
 		return nil, err
 	}
-	manager.connection.NotifyClose(manager.closedConn)
 	go manager.reconnectConn()
 	return manager, nil
 }
@@ -101,7 +100,7 @@ func (am *AMQPManager) SetPoolFactory(factory Factory) {
 }
 
 // AddClient adds a new Channel in pool
-func (am *AMQPManager) AddChannel() error {
+func (am *AMQPManager) AddClient() error {
 	channel, err := am.connection.Channel()
 	if err != nil {
 		return err
@@ -113,38 +112,47 @@ func (am *AMQPManager) AddChannel() error {
 }
 
 // GetChannel get a new AMQP connection channel in pool
-func (am *AMQPManager) GetChannel() (*AMQPWrapper, error) {
+func (am *AMQPManager) GetClient() (*AMQPWrapper, error) {
 	sftpClient := am.pool.Get()
 	if sftpClient == nil {
-		return nil, helper.ErrorPrint("No SFTP client available")
+		return nil, helper.ErrorPrint("no AMQP client available")
 	}
 	return sftpClient.(*AMQPWrapper), nil
 }
 
-// PutClient add an existing SFTP client in pool
+// PutClient add an existing AMQP client in pool
 func (am *AMQPManager) PutClient(client *AMQPWrapper) {
-	am.pool.Put(client)
-}
-
-// Close closes all SFTP connections
-func (am *AMQPManager) Close() error {
-	for {
-		conn := am.pool.Get()
-		if conn == nil {
-			return nil
-		}
-		if err := conn.(*AMQPWrapper).Close(); err != nil {
-			return err
+	err := am.pool.Put(client)
+	if err != nil {
+		am.logger.Warn(err)
+		err = client.Channel.Close()
+		if err != nil {
+			am.logger.WithError(err).Warn("An error occurred while closing channel")
 		}
 	}
 }
 
+// Close closes AMQP connection and channels
+func (am *AMQPManager) Close() error {
+	am.shutdown = true
+	err :=  am.connection.Close()
+	if err != nil {
+		am.shutdown = false
+		return err
+	}
+	return nil
+}
+
 // Private method to handle channel reconnect on error / close / timeout
 func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
-	c.Channel.NotifyClose(c.closedChan)
+	chanClose := c.Channel.NotifyClose(make(chan *amqp.Error, 1))
 	select {
-	case resChan := <-c.closedChan:
-		am.logger.Debugf("Channel closed, reconnecting: %s", resChan)
+	case resChan := <-chanClose:
+		if am.shutdown {
+			am.logger.Debugf("AMQP connection is closing, stopping channel auto-reconnect loop")
+			break
+		}
+		am.logger.Debugf("Channel closed, reconnecting: %v", resChan)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
 			newChannel *amqp.Channel
@@ -162,16 +170,16 @@ func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
 			switch result {
 			case nil:
 				hasReconnected = true
+				am.logger.Info("Channel recreated")
 			case breaker.ErrBreakerOpen:
 			default:
-				am.logger.Errorf("Failed to reconnect: %v", result)
+				am.logger.Errorf("Failed to reconnect channel: %v", result)
 			}
 		}
 
 		atomic.AddUint64(&c.Reconnects, 1)
 		c.Lock()
 		c.Channel = newChannel
-		c.closed = false
 		c.Unlock()
 		// New connections set, rerun async reconnect
 		am.reconnectChannel(c)
@@ -180,9 +188,14 @@ func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
 
 // Private method to handle connection reconnect on error / close / timeout
 func (am *AMQPManager) reconnectConn() {
+	connClose := am.connection.NotifyClose(make(chan *amqp.Error, 1))
 	select {
-	case resConn := <-am.closedConn:
-		am.logger.Debugf("Connection closed, reconnecting: %s", resConn)
+	case resConn := <-connClose:
+		if am.shutdown {
+			am.logger.Debugf("Stop AMQP auto-reconnect loop")
+			break
+		}
+		am.logger.Debugf("AMQP connection closed, reconnecting: %s", resConn)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var hasReconnected = false
 		for !hasReconnected {
@@ -197,23 +210,24 @@ func (am *AMQPManager) reconnectConn() {
 			switch result {
 			case nil:
 				hasReconnected = true
+				am.logger.Info("AMQP connection recreated")
 			case breaker.ErrBreakerOpen:
 			default:
-				am.logger.Errorf("Failed to reconnect: %v", result)
+				am.logger.Errorf("Failed to reconnect AMQP connection: %v", result)
 			}
 		}
+		atomic.AddUint64(&am.Reconnects, 1)
+		// New connections set, rerun async reconnect
+		am.reconnectConn()
 	}
 }
 
 //------------------------------------------------------------------------------
 
-// AMQPWrapper is SFTP client wrapper struct
+// AMQPWrapper is AMQP client wrapper struct
 type AMQPWrapper struct {
 	sync.Mutex
 	Channel     *amqp.Channel
-	closedChan chan *amqp.Error
-	shutdown   chan bool
-	closed     bool
 	Reconnects uint64
 	logger     *logrus.Logger
 }
@@ -222,25 +236,6 @@ type AMQPWrapper struct {
 func NewAMQPWrapper(channel *amqp.Channel) *AMQPWrapper {
 	return &AMQPWrapper{
 		Channel:    channel,
-		shutdown:   make(chan bool, 1),
-		closedChan:   make(chan *amqp.Error, 1),
-		closed:     false,
 		Reconnects: 0,
 	}
-}
-
-// Close closes channel from AMQP => chan notify ssh connection to close
-func (s *AMQPWrapper) Close() error {
-	s.Lock()
-	defer s.Unlock()
-	if s.closed {
-		return helper.ErrorPrint("Connection was already closed")
-	}
-	var err = s.Channel.Close()
-	if err != nil {
-		return helper.ErrorPrintf("unable to close ftp connection: %v", err)
-	}
-	s.shutdown <- true
-	s.closed = true
-	return nil
 }
