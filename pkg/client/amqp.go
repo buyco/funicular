@@ -147,7 +147,7 @@ func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
 	chanClose := c.Channel.NotifyClose(make(chan *amqp.Error, 1))
 	select {
 	case resChan := <-chanClose:
-		if am.shutdown {
+		if am.shutdown && am.connection.IsClosed() {
 			am.logger.Debugf("AMQP connection is closing, stopping channel auto-reconnect loop")
 			break
 		}
@@ -190,7 +190,7 @@ func (am *AMQPManager) reconnectConn() {
 	connClose := am.connection.NotifyClose(make(chan *amqp.Error, 1))
 	select {
 	case resConn := <-connClose:
-		if am.shutdown {
+		if am.shutdown && am.connection.IsClosed() {
 			am.logger.Debugf("Stop AMQP auto-reconnect loop")
 			break
 		}
