@@ -1,7 +1,7 @@
-package client_test
+package sync_test
 
 import (
-	. "github.com/buyco/funicular/pkg/client"
+	"github.com/buyco/funicular/pkg/sync"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -9,16 +9,16 @@ import (
 
 var _ = Describe("Pool", func() {
 
-	var pool *Pool
+	var pool *sync.Pool
 
 	BeforeEach(func() {
-		pool = NewPool(1, nil, logrus.New())
+		pool = sync.NewPool(1, nil, logrus.New())
 	})
 
 	Context("From constructor function", func() {
 
 		It("creates a valid instance", func() {
-			Expect(pool).To(BeAssignableToTypeOf(&Pool{}))
+			Expect(pool).To(BeAssignableToTypeOf(&sync.Pool{}))
 		})
 
 		It("contains zero clients", func() {

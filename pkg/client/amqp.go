@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	syncPkg "github.com/buyco/funicular/pkg/sync"
 	"github.com/buyco/keel/pkg/helper"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
@@ -44,7 +45,7 @@ func NewAMQPManagerConfig(address, user, password string, config *amqp.Config) *
 type AMQPManager struct {
 	config     *AMQPManagerConfig
 	connection *amqp.Connection
-	pool       *Pool
+	pool       *syncPkg.Pool
 	shutdown   bool
 	Reconnects uint64
 	logger     *logrus.Logger
@@ -82,7 +83,7 @@ func (am *AMQPManager) newAMQPConnection() (err error) {
 func NewAMQPManager(config *AMQPManagerConfig, maxCap uint, logger *logrus.Logger) (*AMQPManager, error) {
 	manager := &AMQPManager{
 		config: config,
-		pool:   NewPool(maxCap, nil, logger),
+		pool:   syncPkg.NewPool(maxCap, nil, logger),
 		logger: logger,
 	}
 	err := manager.newAMQPConnection()
@@ -94,7 +95,7 @@ func NewAMQPManager(config *AMQPManagerConfig, maxCap uint, logger *logrus.Logge
 }
 
 // SetPoolFactory adds func factory to pool
-func (am *AMQPManager) SetPoolFactory(factory Factory) {
+func (am *AMQPManager) SetPoolFactory(factory syncPkg.Factory) {
 	am.pool.SetFactory(factory)
 }
 

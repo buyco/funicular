@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	syncPkg "github.com/buyco/funicular/pkg/sync"
 	"github.com/buyco/keel/pkg/helper"
 	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"
@@ -52,7 +53,7 @@ type SFTPManager struct {
 	port      uint32
 	user      string
 	password  string
-	pool      *Pool
+	pool      *syncPkg.Pool
 	sshConfig *ssh.ClientConfig
 	logger    *logrus.Logger
 	sync.Mutex
@@ -63,14 +64,14 @@ func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, maxCa
 	return &SFTPManager{
 		host:      host,
 		port:      port,
-		pool:      NewPool(maxCap, nil, logger),
+		pool:      syncPkg.NewPool(maxCap, nil, logger),
 		sshConfig: sshConfig,
 		logger:    logger,
 	}
 }
 
 // SetPoolFactory adds func factory to pool
-func (sm *SFTPManager) SetPoolFactory(factory Factory) {
+func (sm *SFTPManager) SetPoolFactory(factory syncPkg.Factory) {
 	sm.pool.SetFactory(factory)
 }
 

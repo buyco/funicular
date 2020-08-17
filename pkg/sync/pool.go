@@ -1,4 +1,4 @@
-package client
+package sync
 
 import (
 	"github.com/buyco/keel/pkg/helper"
