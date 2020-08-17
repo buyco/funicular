@@ -228,7 +228,6 @@ type AMQPWrapper struct {
 	sync.Mutex
 	Channel    *amqp.Channel
 	Reconnects uint64
-	logger     *logrus.Logger
 }
 
 // NewAMQPWrapper is AMQPWrapper constructor
