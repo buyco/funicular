@@ -100,10 +100,10 @@ func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 func (sm *SFTPManager) PutClient(client *SFTPWrapper) {
 	err := sm.pool.Put(client)
 	if err != nil {
-		sm.logger.Error(err)
+		sm.logger.Warn(err)
 		err := client.Close()
 		if err != nil {
-			sm.logger.Error(err)
+			sm.logger.WithError(err).Warn("An error occurred while closing connection")
 		}
 	}
 }
