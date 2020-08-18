@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.6.0](https://github.com/buyco/funicular/tree/v0.6.0)
+
+* Add AMQP client manager (#9)
+
 # [v0.5.0](https://github.com/buyco/funicular/tree/v0.5.0)
 
 * Replace sync.Pool to create our own Pool of objects (#8)
