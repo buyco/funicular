@@ -1,6 +1,7 @@
-package client
+package sync
 
 import (
+	"github.com/buyco/keel/pkg/helper"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -8,6 +9,7 @@ import (
 // Pool holds Clients
 type Pool struct {
 	connections chan interface{}
+	capacity    uint
 	factory     Factory
 	logger      *logrus.Logger
 }
@@ -19,6 +21,7 @@ type Factory func() interface{}
 func NewPool(maxCap uint, factory Factory, logger *logrus.Logger) *Pool {
 	return &Pool{
 		connections: make(chan interface{}, maxCap),
+		capacity:    maxCap,
 		factory:     factory,
 		logger:      logger,
 	}
@@ -27,6 +30,11 @@ func NewPool(maxCap uint, factory Factory, logger *logrus.Logger) *Pool {
 // SetFactory declare auto create function
 func (p *Pool) SetFactory(factory Factory) {
 	p.factory = factory
+}
+
+// GetCapacity return defined pool capacity
+func (p *Pool) GetCapacity() uint {
+	return p.capacity
 }
 
 func (p *Pool) Get() (rv interface{}) {
@@ -49,10 +57,11 @@ func (p *Pool) Get() (rv interface{}) {
 	}
 }
 
-func (p *Pool) Put(c interface{}) {
+func (p *Pool) Put(c interface{}) error {
 	select {
 	case p.connections <- c:
+		return nil
 	default:
-		p.logger.Print("Pool is full, element will not be added")
+		return helper.ErrorPrint("pool is full, element will not be added")
 	}
 }

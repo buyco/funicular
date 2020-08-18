@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Sftp", func() {
+var _ = Describe("SFTP", func() {
 
 	var manager *SFTPManager
 	config := &ssh.ClientConfig{
@@ -43,7 +43,7 @@ var _ = Describe("Sftp", func() {
 
 			It("adds a Factory to pool", func() {
 				factoryManager := NewSFTPManager("localhost", 22, config, 1, logrus.New())
-				factoryManager.SetPoolFactory(func() interface{} { return &SFTPWrapper{}})
+				factoryManager.SetPoolFactory(func() interface{} { return &SFTPWrapper{} })
 				Expect(factoryManager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))
 			})
 
@@ -52,6 +52,14 @@ var _ = Describe("Sftp", func() {
 		It("fails to add new client", func() {
 			addCliErr := manager.AddClient()
 			Expect(addCliErr).To(HaveOccurred())
+		})
+
+		It("puts a client", func() {
+			putManager := NewSFTPManager("localhost", 22, config, 1, logrus.New())
+			putManager.PutClient(&SFTPWrapper{})
+			client, getCliErr := putManager.GetClient()
+			Expect(client).ToNot(BeNil())
+			Expect(getCliErr).ToNot(HaveOccurred())
 		})
 
 		It("fails to get a client", func() {
