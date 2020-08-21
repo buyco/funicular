@@ -1,6 +1,15 @@
 CHANGE LOG
 ===================
 
+# [v0.7.0](https://github.com/buyco/funicular/tree/v0.7.0)
+
+* Add option structures for S3 uploader and downloader (#11)
+* Reformat code
+
+# [v0.6.2](https://github.com/buyco/funicular/tree/v0.6.2)
+
+* Change pool Put() error in AddClient() as log
+
 # [v0.6.2](https://github.com/buyco/funicular/tree/v0.6.2)
 
 * Change pool Put() error in AddClient() as log
