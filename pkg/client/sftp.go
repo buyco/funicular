@@ -85,7 +85,7 @@ func (sm *SFTPManager) AddClient() error {
 	go sm.reconnect(sftpStruct)
 	err = sm.pool.Put(sftpStruct)
 	if err != nil {
-		return err
+		sm.logger.Warn(err)
 	}
 	return nil
 }
