@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.6.2](https://github.com/buyco/funicular/tree/v0.6.2)
+
+* Change pool Put() error in AddClient() as log
+
 # [v0.6.1](https://github.com/buyco/funicular/tree/v0.6.1)
 
 * Handle error returned in AddClient() of SFTP and AMQP managers (#10)
