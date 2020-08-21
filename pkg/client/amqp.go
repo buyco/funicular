@@ -107,7 +107,10 @@ func (am *AMQPManager) AddClient() error {
 	}
 	wrapper := NewAMQPWrapper(channel)
 	go am.reconnectChannel(wrapper)
-	am.pool.Put(wrapper)
+	err = am.pool.Put(wrapper)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
