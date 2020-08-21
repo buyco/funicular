@@ -8,8 +8,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/buyco/keel/pkg/helper"
+	"github.com/jinzhu/copier"
 	"io"
 	"sync"
+	"time"
 )
 
 // NewAWSConfig is AWS Config constructor
@@ -28,6 +30,41 @@ func NewS3Client(session *session.Session) *s3.S3 {
 }
 
 //------------------------------------------------------------------------------
+
+type DownloadOptions struct {
+	IfMatch                    string
+	IfModifiedSince            *time.Time
+	IfNoneMatch                string
+	IfUnmodifiedSince          *time.Time
+	ResponseCacheControl       string
+	ResponseContentDisposition string
+	ResponseContentEncoding    string
+	ResponseContentLanguage    string
+	ResponseContentType        string
+	ResponseExpires            *time.Time
+	VersionId                  string
+}
+
+type UploadOptions struct {
+	ACL                       string
+	CacheControl              string
+	ContentDisposition        string
+	ContentEncoding           string
+	ContentLanguage           string
+	ContentMD5                string
+	ContentType               string
+	Expires                   *time.Time
+	GrantFullControl          string
+	GrantRead                 string
+	GrantReadACP              string
+	GrantWriteACP             string
+	Metadata                  map[string]string
+	ObjectLockMode            string
+	ObjectLockRetainUntilDate *time.Time
+	ServerSideEncryption      string
+	StorageClass              string
+	Tagging                   string
+}
 
 // AWSManager is a struct to manage AWS SDK
 type AWSManager struct {
@@ -80,14 +117,15 @@ func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 // StorageAccessLayer is a common interface for AWS storage
 // Specific to S3 for now...
 type StorageAccessLayer interface {
-	Upload(path string, filename string, data io.Reader) (string, error)
-	Download(path string, filename string, data io.WriterAt) (int64, error)
+	Upload(path string, filename string, data io.Reader, options *UploadOptions) (string, error)
+	Download(path string, filename string, data io.WriterAt, options *DownloadOptions) (int64, error)
 	Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error)
 	Delete(path string, files ...string) (*s3.DeleteObjectsOutput, error)
 }
 
 // S3Wrapper is a S3 Adapter
 type S3Wrapper struct {
+	sync.RWMutex
 	bucketName string
 	uploader   *s3manager.Uploader
 	downloader *s3manager.Downloader
@@ -111,12 +149,19 @@ func NewS3Wrapper(bucketName string, s3Client *s3.S3) *S3Wrapper {
 }
 
 // Upload pushes a file to S3
-func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader) (string, error) {
-	upParams := &s3manager.UploadInput{
-		Bucket: aws.String(s3w.bucketName),
-		Key:    aws.String(path + filename),
-		Body:   data,
+func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader, options *UploadOptions) (string, error) {
+	upParams, err := s3w.mergeUploadOptions(
+		&s3manager.UploadInput{
+			Bucket: aws.String(s3w.bucketName),
+			Key:    aws.String(path + filename),
+			Body:   data,
+		},
+		options,
+	)
+	if err != nil {
+		return "", err
 	}
+	// We should implement multipart later on
 	result, err := s3w.uploader.Upload(upParams)
 	var location string
 	if result != nil {
@@ -125,18 +170,146 @@ func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader) (stri
 	return location, err
 }
 
-// Download fetches a file from S3
-func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt) (int64, error) {
-	downParams := &s3.GetObjectInput{
-		Bucket: aws.String(s3w.bucketName),
-		Key:    aws.String(path + filename),
+// Generate a new copy of UploadInput filled with options
+func (s3w *S3Wrapper) mergeUploadOptions(s3Params *s3manager.UploadInput, options *UploadOptions) (*s3manager.UploadInput, error) {
+	s3w.RLock()
+	defer s3w.RUnlock()
+	if s3Params == nil {
+		return nil, helper.ErrorPrint("s3Params argument must be of type UploadInput")
 	}
-	err := downParams.Validate()
+	var newS3Input s3manager.UploadInput
+	err := copier.Copy(&newS3Input, &s3Params)
 	if err != nil {
+		return nil, err
+	}
+	if options == nil {
+		return &newS3Input, nil
+	}
+	if len(options.ContentType) > 0 {
+		newS3Input.ContentType = aws.String(options.ContentType)
+	}
+	if options.Expires != nil {
+		newS3Input.Expires = options.Expires
+	}
+	if len(options.ACL) > 0 {
+		newS3Input.ACL = aws.String(options.ACL)
+	}
+	if options.ObjectLockRetainUntilDate != nil {
+		newS3Input.ObjectLockRetainUntilDate = options.ObjectLockRetainUntilDate
+	}
+	if len(options.CacheControl) > 0 {
+		newS3Input.CacheControl = aws.String(options.CacheControl)
+	}
+	if len(options.ContentDisposition) > 0 {
+		newS3Input.ContentDisposition = aws.String(options.ContentDisposition)
+	}
+	if len(options.ContentEncoding) > 0 {
+		newS3Input.ContentEncoding = aws.String(options.ContentEncoding)
+	}
+	if len(options.ContentLanguage) > 0 {
+		newS3Input.ContentLanguage = aws.String(options.ContentLanguage)
+	}
+	if len(options.ContentMD5) > 0 {
+		newS3Input.ContentMD5 = aws.String(options.ContentMD5)
+	}
+	if len(options.GrantFullControl) > 0 {
+		newS3Input.GrantFullControl = aws.String(options.GrantFullControl)
+	}
+	if len(options.GrantRead) > 0 {
+		newS3Input.GrantRead = aws.String(options.GrantRead)
+	}
+	if len(options.GrantReadACP) > 0 {
+		newS3Input.GrantReadACP = aws.String(options.GrantReadACP)
+	}
+	if len(options.Metadata) > 0 {
+		newS3Input.Metadata = aws.StringMap(options.Metadata)
+	}
+	if len(options.GrantWriteACP) > 0 {
+		newS3Input.GrantWriteACP = aws.String(options.GrantWriteACP)
+	}
+	if len(options.ObjectLockMode) > 0 {
+		newS3Input.ObjectLockMode = aws.String(options.ObjectLockMode)
+	}
+	if len(options.ServerSideEncryption) > 0 {
+		newS3Input.ServerSideEncryption = aws.String(options.ServerSideEncryption)
+	}
+	if len(options.StorageClass) > 0 {
+		newS3Input.StorageClass = aws.String(options.StorageClass)
+	}
+	if len(options.Tagging) > 0 {
+		newS3Input.Tagging = aws.String(options.Tagging)
+	}
+	return &newS3Input, nil
+}
+
+// Download fetches a file from S3
+func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt, options *DownloadOptions) (int64, error) {
+	downParams, err := s3w.mergeDownloadOptions(
+		&s3.GetObjectInput{
+			Bucket: aws.String(s3w.bucketName),
+			Key:    aws.String(path + filename),
+		},
+		options,
+	)
+	if err != nil {
+		return 0, err
+	}
+	if downParams.Validate() != nil {
 		return 0, helper.ErrorPrintf("download params malformed: %v", err)
 	}
 	result, err := s3w.downloader.Download(data, downParams)
 	return result, err
+}
+
+// Generate a new copy of GetObjectInput filled with options
+func (s3w *S3Wrapper) mergeDownloadOptions(s3Params *s3.GetObjectInput, options *DownloadOptions) (*s3.GetObjectInput, error) {
+	s3w.RLock()
+	defer s3w.RUnlock()
+	if s3Params == nil {
+		return nil, helper.ErrorPrint("s3Params argument must be of type GetObjectInput")
+	}
+	var newS3Input s3.GetObjectInput
+	err := copier.Copy(&newS3Input, &s3Params)
+	if err != nil {
+		return nil, err
+	}
+	if options == nil {
+		return &newS3Input, nil
+	}
+	if len(options.IfMatch) > 0 {
+		newS3Input.IfMatch = aws.String(options.IfMatch)
+	}
+	if options.IfModifiedSince != nil {
+		newS3Input.IfModifiedSince = options.IfModifiedSince
+	}
+	if len(options.IfNoneMatch) > 0 {
+		newS3Input.IfNoneMatch = aws.String(options.IfNoneMatch)
+	}
+	if options.IfUnmodifiedSince != nil {
+		newS3Input.IfUnmodifiedSince = options.IfUnmodifiedSince
+	}
+	if len(options.ResponseCacheControl) > 0 {
+		newS3Input.ResponseCacheControl = aws.String(options.ResponseCacheControl)
+	}
+	if len(options.ResponseContentDisposition) > 0 {
+		newS3Input.ResponseContentDisposition = aws.String(options.ResponseContentDisposition)
+	}
+	if len(options.ResponseContentEncoding) > 0 {
+		newS3Input.ResponseContentEncoding = aws.String(options.ResponseContentEncoding)
+	}
+	if len(options.ResponseContentLanguage) > 0 {
+		newS3Input.ResponseContentLanguage = aws.String(options.ResponseContentLanguage)
+	}
+	if len(options.ResponseContentType) > 0 {
+		newS3Input.ResponseContentType = aws.String(options.ResponseContentType)
+	}
+	if options.ResponseExpires != nil {
+		newS3Input.ResponseExpires = options.ResponseExpires
+	}
+	if len(options.VersionId) > 0 {
+		newS3Input.VersionId = aws.String(options.VersionId)
+	}
+	return &newS3Input, nil
 }
 
 // Delete drops files from S3

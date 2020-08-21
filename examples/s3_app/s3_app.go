@@ -90,6 +90,7 @@ func main() {
 				storePath,
 				fileData.Values["filename"].(string),
 				strings.NewReader(fileData.Values["fileData"].(string)),
+				nil,
 			)
 			if err != nil {
 				log.Printf("Failed to upload file, %v", err)
