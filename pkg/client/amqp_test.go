@@ -18,7 +18,6 @@ var _ = Describe("AMQP", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-
 		Context("From constructor function", func() {
 
 			It("creates a valid instance", func() {

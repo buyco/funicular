@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/buyco/funicular/pkg/client"
 	"github.com/buyco/keel/pkg/helper"
-	"github.com/sirupsen/logrus"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/go-redis/redis/v7"
+	"github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"strconv"
@@ -58,9 +58,9 @@ func main() {
 		lastID := "$"
 		for {
 			rArgs := &redis.XReadArgs{
-				Streams: []string{ stream, lastID },
+				Streams: []string{stream, lastID},
 				Count:   5,
-				Block:   3000*time.Millisecond,
+				Block:   3000 * time.Millisecond,
 			}
 			vals, err := redisCli.XRead(rArgs).Result()
 			if err != nil {

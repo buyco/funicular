@@ -111,8 +111,8 @@ func main() {
 
 				_, err = redisCli.XAdd(
 					&redis.XAddArgs{
-						Stream:       stream,
-						Values:       msgData,
+						Stream: stream,
+						Values: msgData,
 					},
 				).Result()
 				if err != nil {
