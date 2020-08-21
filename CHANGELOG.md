@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.6.1](https://github.com/buyco/funicular/tree/v0.6.1)
+
+* Handle error returned in AddClient() of SFTP and AMQP managers (#10)
+
 # [v0.6.0](https://github.com/buyco/funicular/tree/v0.6.0)
 
 * Add AMQP client manager (#9)
