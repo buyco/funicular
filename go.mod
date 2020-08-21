@@ -7,6 +7,7 @@ require (
 	github.com/buyco/keel v0.5.0
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/golang/mock v1.4.4
+	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/onsi/ginkgo v1.12.3
 	github.com/onsi/gomega v1.10.1
 	github.com/pkg/sftp v1.11.0
