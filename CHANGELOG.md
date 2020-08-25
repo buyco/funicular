@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.8.0](https://github.com/buyco/funicular/tree/v0.8.0)
+
+* Move AMQP config from address to host + port (#12)
+
 # [v0.7.0](https://github.com/buyco/funicular/tree/v0.7.0)
 
 * Add option structures for S3 uploader and downloader (#11)
