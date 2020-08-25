@@ -25,16 +25,18 @@ func NewAMQPConfig(vhost string, channelMax int, heartbeat time.Duration) amqp.C
 
 // AMQPManager is a struct to manage AMQP connections
 type AMQPManagerConfig struct {
-	address  string
+	host     string
+	port     int
 	user     string
 	password string
 	config   *amqp.Config
 }
 
 // NewAMQPClient is AMQP client constructor
-func NewAMQPManagerConfig(address, user, password string, config *amqp.Config) *AMQPManagerConfig {
+func NewAMQPManagerConfig(host string, port int, user, password string, config *amqp.Config) *AMQPManagerConfig {
 	return &AMQPManagerConfig{
-		address:  address,
+		host:     host,
+		port:     port,
 		user:     user,
 		password: password,
 		config:   config,
@@ -56,11 +58,12 @@ type AMQPManager struct {
 func (am *AMQPManager) newAMQPConnection() (err error) {
 	var connection *amqp.Connection
 	url := fmt.Sprintf(
-		"%s://%s:%s@%s/",
+		"%s://%s:%s@%s:%d/",
 		"amqp",
 		am.config.user,
 		am.config.password,
-		am.config.address,
+		am.config.host,
+		am.config.port,
 	)
 	if am.config.config != nil {
 		connection, err = amqp.DialConfig(
