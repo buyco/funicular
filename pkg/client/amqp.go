@@ -46,7 +46,7 @@ func NewAMQPManagerConfig(host string, port int, user, password string, config *
 // AMQPManager is a struct to manage AMQP connections
 type AMQPManager struct {
 	config     *AMQPManagerConfig
-	connection *amqp.Connection
+	Connection *amqp.Connection
 	pool       *syncPkg.Pool
 	shutdown   bool
 	Reconnects uint64
@@ -77,7 +77,7 @@ func (am *AMQPManager) newAMQPConnection() (err error) {
 		return helper.ErrorPrintf("unable to start AMQP subsytem: %v", err)
 	}
 	am.Lock()
-	am.connection = connection
+	am.Connection = connection
 	am.Unlock()
 	return nil
 }
@@ -87,6 +87,7 @@ func NewAMQPManager(config *AMQPManagerConfig, maxCap uint, logger *logrus.Logge
 	manager := &AMQPManager{
 		config: config,
 		pool:   syncPkg.NewPool(maxCap, nil, logger),
+		shutdown: true,
 		logger: logger,
 	}
 	err := manager.newAMQPConnection()
@@ -94,6 +95,9 @@ func NewAMQPManager(config *AMQPManagerConfig, maxCap uint, logger *logrus.Logge
 		return nil, err
 	}
 	go manager.reconnectConn()
+	manager.Lock()
+	manager.shutdown = false
+	manager.Unlock()
 	return manager, nil
 }
 
@@ -104,7 +108,7 @@ func (am *AMQPManager) SetPoolFactory(factory syncPkg.Factory) {
 
 // AddClient adds a new Channel in pool
 func (am *AMQPManager) AddClient() error {
-	channel, err := am.connection.Channel()
+	channel, err := am.Connection.Channel()
 	if err != nil {
 		return err
 	}
@@ -140,8 +144,10 @@ func (am *AMQPManager) PutClient(client *AMQPWrapper) {
 
 // Close closes AMQP connection and channels
 func (am *AMQPManager) Close() error {
+	am.Lock()
+	defer am.Unlock()
 	am.shutdown = true
-	err := am.connection.Close()
+	err := am.Connection.Close()
 	if err != nil {
 		am.shutdown = false
 		return err
@@ -154,7 +160,7 @@ func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
 	chanClose := c.Channel.NotifyClose(make(chan *amqp.Error, 1))
 	select {
 	case resChan := <-chanClose:
-		if am.shutdown && am.connection.IsClosed() {
+		if am.shutdown && am.Connection.IsClosed() {
 			am.logger.Debugf("AMQP connection is closing, stopping channel auto-reconnect loop")
 			break
 		}
@@ -166,7 +172,7 @@ func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
 		)
 		for !hasReconnected {
 			result := cb.Run(func() (err error) {
-				newChannel, err = am.connection.Channel()
+				newChannel, err = am.Connection.Channel()
 				if err != nil {
 					return err
 				}
@@ -194,10 +200,10 @@ func (am *AMQPManager) reconnectChannel(c *AMQPWrapper) {
 
 // Private method to handle connection reconnect on error / close / timeout
 func (am *AMQPManager) reconnectConn() {
-	connClose := am.connection.NotifyClose(make(chan *amqp.Error, 1))
+	connClose := am.Connection.NotifyClose(make(chan *amqp.Error, 1))
 	select {
 	case resConn := <-connClose:
-		if am.shutdown && am.connection.IsClosed() {
+		if am.shutdown && am.Connection.IsClosed() {
 			am.logger.Debugf("Stop AMQP auto-reconnect loop")
 			break
 		}

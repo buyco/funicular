@@ -8,7 +8,6 @@ import (
 )
 
 var _ = Describe("AMQP", func() {
-
 	Describe("Using Manager", func() {
 		var manager *AMQPManager
 		config := NewAMQPManagerConfig("localhost", 5672, "guest", "guest", nil)
