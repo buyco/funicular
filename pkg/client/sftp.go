@@ -183,7 +183,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		c.closed = false
 		c.Unlock()
 		// New connections set, rerun async reconnect
-		sm.reconnect(c)
+		go sm.reconnect(c)
 	}
 }
 
