@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.9.0](https://github.com/buyco/funicular/tree/v0.9.0)
+
+* Make connection / channel public to handle them manually (#13)
+
 # [v0.8.0](https://github.com/buyco/funicular/tree/v0.8.0)
 
 * Move AMQP config from address to host + port (#12)
