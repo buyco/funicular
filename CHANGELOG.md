@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.10.0](https://github.com/buyco/funicular/tree/v0.10.0)
+
+* Change logger strategy
+
 # [v0.9.0](https://github.com/buyco/funicular/tree/v0.9.0)
 
 * Make connection / channel public to handle them manually (#13)
