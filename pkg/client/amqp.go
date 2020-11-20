@@ -115,9 +115,9 @@ func (ac *AMQPConnection) reconnectConn() {
 			default:
 			}
 		}
+		// New connections set, rerun async reconnect
+		go ac.reconnectConn()
 	}
-	// New connections set, rerun async reconnect
-	go ac.reconnectConn()
 }
 
 //------------------------------------------------------------------------------
@@ -182,9 +182,9 @@ func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 			}
 		}
 		c.Channel = newChannel
+		// New connections set, rerun async reconnect
+		go ac.reconnectChannel(c)
 	}
-	// New connections set, rerun async reconnect
-	go ac.reconnectChannel(c)
 }
 
 // IsClosed change internal channel state
