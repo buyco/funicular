@@ -2,7 +2,6 @@ package client_test
 
 import (
 	. "github.com/buyco/funicular/pkg/client"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"time"
 
@@ -22,7 +21,7 @@ var _ = Describe("SFTP", func() {
 
 	Describe("Using Manager", func() {
 
-		manager = NewSFTPManager("localhost", 22, config, 1, logrus.New())
+		manager = NewSFTPManager("localhost", 22, config, 1)
 
 		Context("From constructor function", func() {
 
@@ -42,7 +41,7 @@ var _ = Describe("SFTP", func() {
 			})
 
 			It("adds a Factory to pool", func() {
-				factoryManager := NewSFTPManager("localhost", 22, config, 1, logrus.New())
+				factoryManager := NewSFTPManager("localhost", 22, config, 1)
 				factoryManager.SetPoolFactory(func() interface{} { return &SFTPWrapper{} })
 				Expect(factoryManager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))
 			})
@@ -55,7 +54,7 @@ var _ = Describe("SFTP", func() {
 		})
 
 		It("puts a client", func() {
-			putManager := NewSFTPManager("localhost", 22, config, 1, logrus.New())
+			putManager := NewSFTPManager("localhost", 22, config, 1)
 			putManager.PutClient(&SFTPWrapper{})
 			client, getCliErr := putManager.GetClient()
 			Expect(client).ToNot(BeNil())

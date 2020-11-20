@@ -4,7 +4,6 @@ import (
 	"github.com/buyco/funicular/pkg/sync"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Pool", func() {
@@ -12,7 +11,7 @@ var _ = Describe("Pool", func() {
 	var pool *sync.Pool
 
 	BeforeEach(func() {
-		pool = sync.NewPool(1, nil, logrus.New())
+		pool = sync.NewPool(1, nil)
 	})
 
 	Context("From constructor function", func() {
