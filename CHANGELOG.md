@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.10.2](https://github.com/buyco/funicular/tree/v0.10.2)
+
+* Fix infinite loop in reconnect functions
+
 # [v0.10.1](https://github.com/buyco/funicular/tree/v0.10.1)
 
 * Fix errors in tests
