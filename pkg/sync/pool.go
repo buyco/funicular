@@ -2,7 +2,6 @@ package sync
 
 import (
 	"github.com/buyco/keel/pkg/helper"
-	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -11,19 +10,17 @@ type Pool struct {
 	connections chan interface{}
 	capacity    uint
 	factory     Factory
-	logger      *logrus.Logger
 }
 
 // Factory is a function to create new connections
 type Factory func() interface{}
 
 // NewPool creates a new pool of interface.
-func NewPool(maxCap uint, factory Factory, logger *logrus.Logger) *Pool {
+func NewPool(maxCap uint, factory Factory) *Pool {
 	return &Pool{
 		connections: make(chan interface{}, maxCap),
 		capacity:    maxCap,
 		factory:     factory,
-		logger:      logger,
 	}
 }
 

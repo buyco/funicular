@@ -3,9 +3,10 @@ package client
 import (
 	"fmt"
 	"github.com/buyco/keel/pkg/helper"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -45,14 +46,12 @@ func NewAMQPConnectionConfig(host string, port int, user, password string, confi
 type AMQPConnection struct {
 	*amqp.Connection
 	config *AMQPConnectionConfig
-	logger *logrus.Logger
 }
 
 // NewAMQPConnection is AMQPConnection constructor
-func NewAMQPConnection(config *AMQPConnectionConfig, logger *logrus.Logger) (*AMQPConnection, error) {
+func NewAMQPConnection(config *AMQPConnectionConfig) (*AMQPConnection, error) {
 	conn := &AMQPConnection{
 		config: config,
-		logger: logger,
 	}
 	err := conn.createAMQPConnection()
 	if err != nil {
@@ -94,7 +93,7 @@ func (ac *AMQPConnection) reconnectConn() {
 	select {
 	case closeReason, open := <-connClose:
 		if !open {
-			ac.logger.Debugf("AMQP connection closed with reason: %s", closeReason.Error())
+			log.Debugf("AMQP connection closed with reason: %v", closeReason)
 			break
 		}
 		cb := breaker.New(3, 1, 5*time.Second)
@@ -110,7 +109,7 @@ func (ac *AMQPConnection) reconnectConn() {
 
 			switch result {
 			case nil:
-				ac.logger.Debug("AMQP connection reconnected")
+				log.Debug("AMQP connection reconnected")
 				hasReconnected = true
 			case breaker.ErrBreakerOpen:
 			default:
@@ -125,6 +124,7 @@ func (ac *AMQPConnection) reconnectConn() {
 
 // AMQPChannel is AMQP chan wrapper struct
 type AMQPChannel struct {
+	sync.Mutex
 	*amqp.Channel
 	closed uint32
 }
@@ -142,10 +142,7 @@ func (ac *AMQPConnection) Channel() (*AMQPChannel, error) {
 	if err != nil {
 		return nil, err
 	}
-	wrapperChan := &AMQPChannel{
-		Channel: ch,
-		closed:  0,
-	}
+	wrapperChan := NewAMQPChannel(ch)
 	go ac.reconnectChannel(wrapperChan)
 	return wrapperChan, nil
 }
@@ -156,9 +153,9 @@ func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 	select {
 	case closeReason, open := <-chanClose:
 		if !open || c.IsClosed() {
-			ac.logger.Debugf("AMQP channel closed with reason: %s", closeReason.Error())
+			log.Debugf("AMQP channel closed with reason: %v", closeReason)
 			if err := c.Close(); err != nil {
-				ac.logger.WithError(err).Debug("AMQP close error")
+				log.WithError(err).Debug("AMQP close error")
 			}
 			break
 		}
@@ -178,7 +175,7 @@ func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 
 			switch result {
 			case nil:
-				ac.logger.Debug("AMQP channel reconnected")
+				log.Debug("AMQP channel reconnected")
 				hasReconnected = true
 			case breaker.ErrBreakerOpen:
 			default:

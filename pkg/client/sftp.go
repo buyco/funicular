@@ -5,7 +5,7 @@ import (
 	syncPkg "github.com/buyco/funicular/pkg/sync"
 	"github.com/buyco/keel/pkg/helper"
 	"github.com/pkg/sftp"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"sync"
@@ -55,18 +55,16 @@ type SFTPManager struct {
 	password  string
 	pool      *syncPkg.Pool
 	sshConfig *ssh.ClientConfig
-	logger    *logrus.Logger
 	sync.Mutex
 }
 
 // NewSFTPManager is SFTPManager constructor
-func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, maxCap uint, logger *logrus.Logger) *SFTPManager {
+func NewSFTPManager(host string, port uint32, sshConfig *ssh.ClientConfig, maxCap uint) *SFTPManager {
 	return &SFTPManager{
 		host:      host,
 		port:      port,
-		pool:      syncPkg.NewPool(maxCap, nil, logger),
+		pool:      syncPkg.NewPool(maxCap, nil),
 		sshConfig: sshConfig,
-		logger:    logger,
 	}
 }
 
@@ -85,7 +83,7 @@ func (sm *SFTPManager) AddClient() error {
 	go sm.reconnect(sftpStruct)
 	err = sm.pool.Put(sftpStruct)
 	if err != nil {
-		sm.logger.Warn(err)
+		log.Warn(err)
 	}
 	return nil
 }
@@ -103,10 +101,10 @@ func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 func (sm *SFTPManager) PutClient(client *SFTPWrapper) {
 	err := sm.pool.Put(client)
 	if err != nil {
-		sm.logger.Warn(err)
+		log.Warn(err)
 		err := client.Close()
 		if err != nil {
-			sm.logger.WithError(err).Warn("An error occurred while closing connection")
+			log.WithError(err).Warn("An error occurred while closing connection")
 		}
 	}
 }
@@ -150,7 +148,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		_ = c.connection.Close()
 		break
 	case res := <-closed:
-		sm.logger.Debugf("SFTP connection closed, reconnecting: %s", res)
+		log.Debugf("SFTP connection closed, reconnecting: %s", res)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
 			sshConn        *ssh.Client
@@ -172,7 +170,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 				hasReconnected = true
 			case breaker.ErrBreakerOpen:
 			default:
-				sm.logger.Errorf("SFTP failed to reconnect: %v", result)
+				log.Errorf("SFTP failed to reconnect: %v", result)
 			}
 		}
 
