@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v0.10.1](https://github.com/buyco/funicular/tree/v0.10.1)
+
+* Fix errors in tests
+
 # [v0.10.0](https://github.com/buyco/funicular/tree/v0.10.0)
 
 * Change logger strategy
