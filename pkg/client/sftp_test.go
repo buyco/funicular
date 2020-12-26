@@ -163,11 +163,6 @@ var _ = Describe("SFTP", func() {
 				manager.SetPoolFactory(func() interface{} { return &SFTPWrapper{} })
 				Expect(manager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))
 			})
-
-			It("adds a Factory to pool", func() {
-				manager.SetPoolFactory(func() interface{} { return &SFTPWrapper{} })
-				Expect(manager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))
-			})
 		})
 	})
 })
