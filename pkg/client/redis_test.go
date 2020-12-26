@@ -6,7 +6,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 )
@@ -27,7 +26,7 @@ var _ = Describe("Redis", func() {
 		var manager *RedisManager
 
 		BeforeEach(func() {
-			manager = NewRedisManager(config, logrus.New())
+			manager = NewRedisManager(config)
 		})
 
 		Context("From constructor function", func() {

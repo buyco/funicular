@@ -3,7 +3,7 @@ package client
 import (
 	"github.com/buyco/keel/pkg/helper"
 	"github.com/go-redis/redis/v7"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"strconv"
 	"sync"
@@ -30,16 +30,14 @@ func (rc *RedisConfig) ToOption() *redis.Options {
 type RedisManager struct {
 	config  RedisConfig
 	Clients map[string]*redis.Client
-	logger  *logrus.Logger
 	sync.RWMutex
 }
 
 // NewRedisManager is RedisManager struct constructor
-func NewRedisManager(config RedisConfig, logger *logrus.Logger) *RedisManager {
+func NewRedisManager(config RedisConfig) *RedisManager {
 	return &RedisManager{
 		config:  config,
 		Clients: make(map[string]*redis.Client),
-		logger:  logger,
 	}
 }
 
@@ -85,7 +83,7 @@ func (rw *RedisManager) set(client *redis.Client, category string) *redis.Client
 	if content == nil {
 		rw.Clients[category] = client
 	} else {
-		rw.logger.Infof("Redis client already set for category [%s]", category)
+		log.Infof("Redis client already set for category [%s]", category)
 	}
 	return rw.Clients[category]
 }

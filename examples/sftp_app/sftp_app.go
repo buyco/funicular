@@ -1,19 +1,18 @@
 package main
 
 import (
-	"github.com/buyco/funicular/pkg/client"
-	"github.com/buyco/keel/pkg/helper"
-	"github.com/go-redis/redis/v7"
-	"github.com/sirupsen/logrus"
-
 	"fmt"
-	"github.com/pkg/sftp"
 	"io/ioutil"
 	"log"
 	"os"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/buyco/funicular/pkg/client"
+	"github.com/buyco/keel/pkg/helper"
+	"github.com/go-redis/redis/v7"
+	"github.com/pkg/sftp"
 )
 
 const stream = "example-stream"
@@ -37,7 +36,6 @@ func main() {
 				os.Getenv("SFTP_PASSWORD"),
 			),
 			2,
-			logrus.New(),
 		)
 		err := sftpManager.AddClient()
 		if err != nil {
@@ -87,7 +85,6 @@ func main() {
 			Port: uint16(redisPort),
 			DB:   uint8(redisDb),
 		},
-		logrus.New(),
 	)
 	redisManager.AddClient(category)
 	redisCli := redisManager.Clients[stream]

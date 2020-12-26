@@ -1,16 +1,16 @@
 package main
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/buyco/funicular/pkg/client"
-	"github.com/buyco/keel/pkg/helper"
-	"github.com/go-redis/redis/v7"
-	"github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/buyco/funicular/pkg/client"
+	"github.com/buyco/keel/pkg/helper"
+	"github.com/go-redis/redis/v7"
 )
 
 const stream = "example-stream"
@@ -31,7 +31,6 @@ func main() {
 				Port: uint16(redisPort),
 				DB:   uint8(redisDb),
 			},
-			logrus.New(),
 		)
 		redisManager.AddClient(category)
 		redisCli := redisManager.Clients[category]
