@@ -1,6 +1,11 @@
 CHANGE LOG
 ===================
 
+# [v0.11.0](https://github.com/buyco/funicular/tree/v0.11.0)
+
+* Upgrade libs & bump Go version to 1.16 (#16)
+* Delete useless logger, add and fix tests (#14)
+
 # [v0.10.2](https://github.com/buyco/funicular/tree/v0.10.2)
 
 * Fix infinite loop in reconnect functions
