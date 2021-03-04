@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.11.1](https://github.com/buyco/funicular/tree/v1.11.1)
+
+* Update README and tag over retracted version
+
 # [v1.0.0](https://github.com/buyco/funicular/tree/v1.0.0)
 
 * Retract a bad version of Funicular (#17)
