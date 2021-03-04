@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.0.0](https://github.com/buyco/funicular/tree/v1.0.0)
+
+* Retract a bad version of Funicular (#17)
+
 # [v0.11.0](https://github.com/buyco/funicular/tree/v0.11.0)
 
 * Upgrade libs & bump Go version to 1.16 (#16)
