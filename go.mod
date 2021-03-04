@@ -16,3 +16,6 @@ require (
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	gopkg.in/eapache/go-resiliency.v1 v1.2.0
 )
+
+// This version is in fact v0.11.0 tag
+retract v1.11.0
