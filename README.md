@@ -5,10 +5,14 @@
 
 Simple facades to create commands.
 
+## Important information
+
+This package use `retract` directive in `go.mod` file and is now only compatible with Go 1.16 from v1.0.0
+
 ## Run commands
 
 ```bash
-$ export GO111MODULE=on # Optional from Go 1.14.x
+$ export GO111MODULE=on # Optional from Go 1.16.x
 $ go get ./...
 $ cp .env-example .env
 $ cd cmd/<cmd>
@@ -18,7 +22,7 @@ $ go build ./<cmd>
 ## Run tests locally
 
 ```bash
-$ export GO111MODULE=on # Optional from Go 1.14.x
+$ export GO111MODULE=on # Optional from Go 1.16.x
 $ go get ./...
 $ go get github.com/onsi/gomega
 $ go get github.com/onsi/ginkgo/ginkgo
