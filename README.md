@@ -12,7 +12,6 @@ This package use `retract` directive in `go.mod` file and is now only compatible
 ## Run commands
 
 ```bash
-$ export GO111MODULE=on # Optional from Go 1.16.x
 $ go get ./...
 $ cp .env-example .env
 $ cd cmd/<cmd>
@@ -22,7 +21,6 @@ $ go build ./<cmd>
 ## Run tests locally
 
 ```bash
-$ export GO111MODULE=on # Optional from Go 1.16.x
 $ go get ./...
 $ go get github.com/onsi/gomega
 $ go get github.com/onsi/ginkgo/ginkgo
