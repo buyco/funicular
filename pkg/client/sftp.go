@@ -148,6 +148,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		_ = c.connection.Close()
 		break
 	case res := <-closed:
+		c.Lock()
 		log.Debugf("SFTP connection closed, reconnecting: %s", res)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
@@ -174,12 +175,13 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 			}
 		}
 
-		atomic.AddUint64(&c.Reconnects, 1)
-		c.Lock()
 		c.connection = sshConn
 		c.Client = sftpConn
 		c.closed = false
 		c.Unlock()
+		// This is why we do not defer the unlock
+		atomic.AddUint64(&c.Reconnects, 1)
+
 		// New connections set, rerun async reconnect
 		go sm.reconnect(c)
 	}
