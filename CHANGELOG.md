@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.11.2](https://github.com/buyco/funicular/tree/v1.11.2)
+
+* Make the whole reconnection process lock actions on SFTP client (#18)
+
 # [v1.11.1](https://github.com/buyco/funicular/tree/v1.11.1)
 
 * Update README and tag over retracted version
