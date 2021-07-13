@@ -33,7 +33,7 @@ var _ = Describe("SFTP", func() {
 
 		// Once a ServerConfig has been configured, connections can be
 		// accepted.
-		listener, err := net.Listen("tcp", "127.0.0.1:" + port)
+		listener, err := net.Listen("tcp", "127.0.0.1:"+port)
 		if err != nil {
 			log.Fatal("failed to listen for connection", err)
 		}
