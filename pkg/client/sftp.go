@@ -55,7 +55,6 @@ type SFTPManager struct {
 	password  string
 	pool      *syncPkg.Pool
 	sshConfig *ssh.ClientConfig
-	sync.Mutex
 }
 
 // NewSFTPManager is SFTPManager constructor
@@ -192,7 +191,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 
 // SFTPWrapper is SFTP client wrapper struct
 type SFTPWrapper struct {
-	sync.Mutex
+	mutex      sync.Mutex
 	connection *ssh.Client
 	client     *sftp.Client
 	shutdown   chan bool
@@ -213,8 +212,8 @@ func NewSFTPWrapper(sshClient *ssh.Client, sftpClient *sftp.Client) *SFTPWrapper
 
 // Close closes connection from SFTP => chan notify ssh connection to close
 func (s *SFTPWrapper) Close() error {
-	s.Lock()
-	defer s.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	if s.closed {
 		return helper.ErrorPrint("SFTP connection was already closed")
 	}
@@ -229,7 +228,7 @@ func (s *SFTPWrapper) Close() error {
 
 // Client ensures that client can be fetched and is not reconnecting
 func (s *SFTPWrapper) Client() *sftp.Client {
-	s.Lock()
-	defer s.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	return s.client
 }
