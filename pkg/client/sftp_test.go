@@ -159,6 +159,12 @@ var _ = Describe("SFTP", func() {
 				Expect(getCliErr).ToNot(HaveOccurred())
 			})
 
+			It("says when client is closed", func() {
+				addCliErr := manager.AddClient()
+				client, _ := manager.GetClient()
+				Expect(client.Close()).To(BeTrue())
+			})
+
 			It("adds a Factory to pool", func() {
 				manager.SetPoolFactory(func() interface{} { return &SFTPWrapper{} })
 				Expect(manager.GetClient()).To(BeAssignableToTypeOf(&SFTPWrapper{}))

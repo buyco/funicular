@@ -149,6 +149,8 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		break
 	case res := <-closed:
 		c.Lock()
+		c.closed = true
+		c.Unlock()
 		log.Debugf("SFTP connection closed, reconnecting: %s", res)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
@@ -175,6 +177,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 			}
 		}
 
+		c.Lock()
 		c.connection = sshConn
 		c.Client = sftpConn
 		c.closed = false
@@ -224,4 +227,9 @@ func (s *SFTPWrapper) Close() error {
 	s.shutdown <- true
 	s.closed = true
 	return s.Client.Wait()
+}
+
+// Closed returns a boolean to know if the client is closed
+func (s *SFTPWrapper) Closed() bool {
+	return s.closed
 }
