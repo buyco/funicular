@@ -116,14 +116,28 @@ func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
 func (sm *S3Manager) Get(bucketName string) *S3Wrapper {
 	sm.mutex.RLock()
 	defer sm.mutex.RUnlock()
-	return sm.s3[bucketName]
+	if sm.s3[bucketName] == nil {
+		return nil
+	}
+	return sm.s3[bucketName].(*S3Wrapper)
 }
 
 // GetAll is used to fetch all buckets from the manager
-func (sm *S3Manager) GetAll() *S3Wrapper {
+func (sm *S3Manager) GetAll() map[string]StorageAccessLayer {
 	sm.mutex.RLock()
 	defer sm.mutex.RUnlock()
 	return sm.s3
+}
+
+// Delete is used to delete a bucket from the manager
+func (sm *S3Manager) Delete(bucketName string) error {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	if sm.s3[bucketName] == nil {
+		return helper.ErrorPrintf("bucket [%s] does not exist", bucketName)
+	}
+	delete(sm.s3, bucketName)
+	return nil
 }
 
 //------------------------------------------------------------------------------

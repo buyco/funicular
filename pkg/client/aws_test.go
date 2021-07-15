@@ -78,6 +78,19 @@ var _ = Describe("AWS", func() {
 				Expect(s3Manager.Get(bucketName)).To(BeAssignableToTypeOf(&S3Wrapper{}))
 				Expect(s3Manager.Get(bucketName)).To(BeIdenticalTo(s3Wrapper))
 			})
+
+			It("deletes a bucket from manager storage", func() {
+				bucketName := "test-bucket-del"
+				s3Manager.Add(bucketName)
+				err := s3Manager.Delete(bucketName)
+				Expect(err).To(BeNil())
+			})
+
+			It("fails to delete not existing bucket", func() {
+				bucketName := "test-bucket-fail"
+				err := s3Manager.Delete(bucketName)
+				Expect(err).To(HaveOccurred())
+			})
 		})
 	})
 
