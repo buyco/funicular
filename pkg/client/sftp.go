@@ -149,9 +149,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		break
 	case res := <-closed:
 		c.Lock()
-		c.closed = true
-		c.Unlock()
-		log.Debugf("SFTP connection closed, reconnecting: %s", res)
+		log.Infof("SFTP connection closed, reconnecting: %s", res)
 		cb := breaker.New(3, 1, 5*time.Second)
 		var (
 			sshConn        *ssh.Client
@@ -177,13 +175,13 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 			}
 		}
 
-		c.Lock()
 		c.connection = sshConn
-		c.Client = sftpConn
+		c.client = sftpConn
 		c.closed = false
 		c.Unlock()
 		// This is why we do not defer the unlock
 		atomic.AddUint64(&c.Reconnects, 1)
+		log.Info("SFTP connection recovered")
 
 		// New connections set, rerun async reconnect
 		go sm.reconnect(c)
@@ -196,7 +194,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 type SFTPWrapper struct {
 	sync.Mutex
 	connection *ssh.Client
-	Client     *sftp.Client
+	client     *sftp.Client
 	shutdown   chan bool
 	closed     bool
 	Reconnects uint64
@@ -206,7 +204,7 @@ type SFTPWrapper struct {
 func NewSFTPWrapper(sshClient *ssh.Client, sftpClient *sftp.Client) *SFTPWrapper {
 	return &SFTPWrapper{
 		connection: sshClient,
-		Client:     sftpClient,
+		client:     sftpClient,
 		shutdown:   make(chan bool, 1),
 		closed:     false,
 		Reconnects: 0,
@@ -220,16 +218,18 @@ func (s *SFTPWrapper) Close() error {
 	if s.closed {
 		return helper.ErrorPrint("SFTP connection was already closed")
 	}
-	var err = s.Client.Close()
+	var err = s.client.Close()
 	if err != nil {
 		return helper.ErrorPrintf("unable to close sftp connection: %v", err)
 	}
 	s.shutdown <- true
 	s.closed = true
-	return s.Client.Wait()
+	return s.client.Wait()
 }
 
-// Closed returns a boolean to know if the client is closed
-func (s *SFTPWrapper) Closed() bool {
-	return s.closed
+// Client ensures that client can be fetched and is not reconnecting
+func (s *SFTPWrapper) Client() *sftp.Client {
+	s.Lock()
+	defer s.Unlock()
+	return s.client
 }
