@@ -54,7 +54,7 @@ func main() {
 
 		tmpReadFiles := make([]os.FileInfo, 0)
 		for {
-			dir, err := sftpConn.Client.ReadDir(sftpDir)
+			dir, err := sftpConn.Client().ReadDir(sftpDir)
 			if err != nil {
 				log.Fatalf("Cannot read dir #%v", err)
 			}
@@ -63,7 +63,7 @@ func main() {
 
 				for _, file := range dir {
 					if !stringInSlice(file.Name(), tmpReadFiles) {
-						fHandler, err := sftpConn.Client.Open(sftpDir + file.Name())
+						fHandler, err := sftpConn.Client().Open(sftpDir + file.Name())
 						if err != nil {
 							log.Printf("Cannot read file %s #%v", file.Name(), err)
 						} else {

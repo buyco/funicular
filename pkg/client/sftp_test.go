@@ -151,11 +151,12 @@ var _ = Describe("SFTP", func() {
 		Context("From active address", func() {
 			manager := NewSFTPManager("127.0.0.1", 18000, config, 1)
 
-			It("gets a client", func() {
+			It("gets a wrapper and client", func() {
 				addCliErr := manager.AddClient()
 				Expect(addCliErr).ToNot(HaveOccurred())
-				client, getCliErr := manager.GetClient()
-				Expect(client).To(BeAssignableToTypeOf(&SFTPWrapper{}))
+				wrapper, getCliErr := manager.GetClient()
+				Expect(wrapper).To(BeAssignableToTypeOf(&SFTPWrapper{}))
+				Expect(wrapper.Client()).To(BeAssignableToTypeOf(&sftp.Client{}))
 				Expect(getCliErr).ToNot(HaveOccurred())
 			})
 
