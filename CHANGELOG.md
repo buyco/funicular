@@ -1,6 +1,11 @@
 CHANGE LOG
 ===================
 
+# [v1.12.0](https://github.com/buyco/funicular/tree/v1.12.0)
+
+* Fix race condition SFTP (#21)
+* Move CI to Github actions (#19)
+
 # [v1.11.2](https://github.com/buyco/funicular/tree/v1.11.2)
 
 * Make the whole reconnection process lock actions on SFTP client (#18)
