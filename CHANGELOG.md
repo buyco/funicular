@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.13.0](https://github.com/buyco/funicular/tree/v1.13.0)
+
+* Fix mutexes usage and add AWS S3 functions (#22)
+
 # [v1.12.0](https://github.com/buyco/funicular/tree/v1.12.0)
 
 * Fix race condition SFTP (#21)
