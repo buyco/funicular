@@ -88,28 +88,56 @@ func NewAWSManager(session *session.Session) *AWSManager {
 type S3Manager struct {
 	session *session.Session
 	client  *s3.S3
-	S3      map[string]StorageAccessLayer
-	sync.Mutex
+	s3      map[string]StorageAccessLayer
+	mutex   sync.RWMutex
 }
 
 // NewS3Manager is a S3Manager constructor
 func NewS3Manager(session *session.Session) *S3Manager {
 	return &S3Manager{
 		client: NewS3Client(session),
-		S3:     make(map[string]StorageAccessLayer, 0),
+		s3:     make(map[string]StorageAccessLayer, 0),
 	}
 }
 
 // Add is used to add a bucket to the manager
 func (sm *S3Manager) Add(bucketName string) *S3Wrapper {
-	sm.Lock()
-	defer sm.Unlock()
-	if sm.S3[bucketName] == nil {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	if sm.s3[bucketName] == nil {
 		s3Wrapper := NewS3Wrapper(bucketName, sm.client)
-		sm.S3[bucketName] = s3Wrapper
+		sm.s3[bucketName] = s3Wrapper
 	}
 
-	return sm.S3[bucketName].(*S3Wrapper)
+	return sm.s3[bucketName].(*S3Wrapper)
+}
+
+// Get is used to fetch a bucket from the manager
+func (sm *S3Manager) Get(bucketName string) *S3Wrapper {
+	sm.mutex.RLock()
+	defer sm.mutex.RUnlock()
+	if sm.s3[bucketName] == nil {
+		return nil
+	}
+	return sm.s3[bucketName].(*S3Wrapper)
+}
+
+// GetAll is used to fetch all buckets from the manager
+func (sm *S3Manager) GetAll() map[string]StorageAccessLayer {
+	sm.mutex.RLock()
+	defer sm.mutex.RUnlock()
+	return sm.s3
+}
+
+// Delete is used to delete a bucket from the manager
+func (sm *S3Manager) Delete(bucketName string) error {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	if sm.s3[bucketName] == nil {
+		return helper.ErrorPrintf("bucket [%s] does not exist", bucketName)
+	}
+	delete(sm.s3, bucketName)
+	return nil
 }
 
 //------------------------------------------------------------------------------
@@ -125,7 +153,6 @@ type StorageAccessLayer interface {
 
 // S3Wrapper is a S3 Adapter
 type S3Wrapper struct {
-	sync.RWMutex
 	bucketName string
 	uploader   *s3manager.Uploader
 	downloader *s3manager.Downloader
@@ -172,8 +199,6 @@ func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader, optio
 
 // Generate a new copy of UploadInput filled with options
 func (s3w *S3Wrapper) mergeUploadOptions(s3Params *s3manager.UploadInput, options *UploadOptions) (*s3manager.UploadInput, error) {
-	s3w.RLock()
-	defer s3w.RUnlock()
 	if s3Params == nil {
 		return nil, helper.ErrorPrint("s3Params argument must be of type UploadInput")
 	}
@@ -263,8 +288,6 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt, o
 
 // Generate a new copy of GetObjectInput filled with options
 func (s3w *S3Wrapper) mergeDownloadOptions(s3Params *s3.GetObjectInput, options *DownloadOptions) (*s3.GetObjectInput, error) {
-	s3w.RLock()
-	defer s3w.RUnlock()
 	if s3Params == nil {
 		return nil, helper.ErrorPrint("s3Params argument must be of type GetObjectInput")
 	}
