@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.14.0](https://github.com/buyco/funicular/tree/v1.14.0)
+
+* Add Makefile + linter + vet + bump to Go 1.17 (#23)
+
 # [v1.13.0](https://github.com/buyco/funicular/tree/v1.13.0)
 
 * Fix mutexes usage and add AWS S3 functions (#22)
