@@ -95,26 +95,23 @@ func main() {
 		}
 	}()
 
-	for {
-		select {
-		case fileMap := <-fileChan:
-			fmt.Printf("Got file message chan: %v\n", fileMap["fileInfo"].(os.FileInfo).Name())
+	for fileMap := range fileChan{
+		fmt.Printf("Got file message chan: %v\n", fileMap["fileInfo"].(os.FileInfo).Name())
 
-			fByteData, err := ioutil.ReadAll(fileMap["fileHandler"].(*sftp.File))
+		fByteData, err := ioutil.ReadAll(fileMap["fileHandler"].(*sftp.File))
+		if err != nil {
+			log.Printf("Cannot read file data %s #%v", fileMap["fileInfo"].(os.FileInfo).Name(), err)
+		} else {
+			msgData := map[string]interface{}{"filename": fileMap["fileInfo"].(os.FileInfo).Name(), "fileData": fByteData}
+
+			_, err = redisCli.XAdd(
+				&redis.XAddArgs{
+					Stream: stream,
+					Values: msgData,
+				},
+			).Result()
 			if err != nil {
-				log.Printf("Cannot read file data %s #%v", fileMap["fileInfo"].(os.FileInfo).Name(), err)
-			} else {
-				msgData := map[string]interface{}{"filename": fileMap["fileInfo"].(os.FileInfo).Name(), "fileData": fByteData}
-
-				_, err = redisCli.XAdd(
-					&redis.XAddArgs{
-						Stream: stream,
-						Values: msgData,
-					},
-				).Result()
-				if err != nil {
-					log.Printf("Cannot send message: %v", err)
-				}
+				log.Printf("Cannot send message: %v", err)
 			}
 		}
 	}

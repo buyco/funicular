@@ -69,8 +69,6 @@ type UploadOptions struct {
 // AWSManager is a struct to manage AWS SDK
 type AWSManager struct {
 	session      *session.Session
-	disconnected chan bool
-	closed       bool
 	S3Manager    *S3Manager
 }
 
@@ -86,7 +84,6 @@ func NewAWSManager(session *session.Session) *AWSManager {
 
 // S3Manager is a struct to control S3 client
 type S3Manager struct {
-	session *session.Session
 	client  *s3.S3
 	s3      map[string]StorageAccessLayer
 	mutex   sync.RWMutex
@@ -96,7 +93,7 @@ type S3Manager struct {
 func NewS3Manager(session *session.Session) *S3Manager {
 	return &S3Manager{
 		client: NewS3Client(session),
-		s3:     make(map[string]StorageAccessLayer, 0),
+		s3:     make(map[string]StorageAccessLayer),
 	}
 }
 
