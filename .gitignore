@@ -18,6 +18,7 @@
 examples/sftp_app/sftp_app
 examples/s3_app/s3_app
 vendor
+bin
 
 # Env files
 .env

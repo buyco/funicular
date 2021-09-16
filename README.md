@@ -1,5 +1,5 @@
 # Funicular
-[![GoDoc](https://godoc.org/github.com/buyco/funicular?status.svg)](http://godoc.org/github.com/buyco/funicular) [![Build Status](https://github.com/buyco/funicular/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/buyco/funicular/actions/workflows/test.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/buyco/funicular)](https://goreportcard.com/report/github.com/buyco/funicular) [![license](https://img.shields.io/github/license/buyco/funicular.svg)](https://github.com/buyco/funicular/LICENSE)
+[![GoDoc](https://godoc.org/github.com/buyco/funicular?status.svg)](http://godoc.org/github.com/buyco/funicular) [![Build Status](https://github.com/buyco/funicular/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/buyco/funicular/actions/workflows/test.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/buyco/funicular)](https://goreportcard.com/report/github.com/buyco/funicular) [![codecov](https://codecov.io/gh/buyco/funicular/branch/master/graph/badge.svg?token=e3ewGpjHfO)](https://codecov.io/gh/buyco/funicular) [![license](https://img.shields.io/github/license/buyco/funicular.svg)](https://github.com/buyco/funicular/LICENSE)
 
 ###### 01000110 01010101 01001110 01001001 01000011 01010101 01001100 01000001 01010010
 
@@ -51,6 +51,14 @@ $ make help
 To compile examples:
 ```bash
 $ make build
+```
+
+To check (vet / lint / fmt)
+```bash
+$ make check
+$ make lint # only lint
+$ make vet # only vet
+$ make fmt # only fmt
 ```
 
 To run tests:
