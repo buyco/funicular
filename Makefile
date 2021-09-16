@@ -2,6 +2,9 @@
 GOBASE := $(shell pwd)
 GOBIN := $(GOBASE)/bin
 
+## build: Run build on examples
+build: go-get go-build
+
 ## test: Run test suites
 test: go-get go-test
 
@@ -17,7 +20,7 @@ fmt:
 lint:
 	@echo "  >  Running staticcheck go linter..."
 	@GOBIN=$(GOBIN) go install honnef.co/go/tools/cmd/staticcheck@latest
-	@$(GOBIN)/staticcheck ./internal/...
+	@$(GOBIN)/staticcheck ./...
 
 ## lint: Run vet
 vet:
@@ -36,6 +39,11 @@ go-get:
 go-tidy:
 	@echo "  > Running go mod tidy"
 	go mod tidy
+
+go-build:
+	@echo "  >  Building examples binaries..."
+	@GOBIN=$(GOBIN) go build $(LDFLAGS) examples/s3_app/s3_app.go
+	@GOBIN=$(GOBIN) go build $(LDFLAGS) examples/sftp_app/sftp_app.go
 
 .PHONY: help
 all: help
