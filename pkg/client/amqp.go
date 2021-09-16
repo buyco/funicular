@@ -90,34 +90,33 @@ func (ac *AMQPConnection) createAMQPConnection() (err error) {
 // Private method to handle connection reconnect on error / close / timeout
 func (ac *AMQPConnection) reconnectConn() {
 	connClose := ac.Connection.NotifyClose(make(chan *amqp.Error, 1))
-	select {
-	case closeReason, open := <-connClose:
-		if !open {
-			log.Debugf("AMQP connection closed with reason: %v", closeReason)
-			break
-		}
-		cb := breaker.New(3, 1, 5*time.Second)
-		var hasReconnected = false
-		for !hasReconnected {
-			result := cb.Run(func() (err error) {
-				err = ac.createAMQPConnection()
-				if err != nil {
-					return err
-				}
-				return nil
-			})
 
-			switch result {
-			case nil:
-				log.Debug("AMQP connection reconnected")
-				hasReconnected = true
-			case breaker.ErrBreakerOpen:
-			default:
-			}
-		}
-		// New connections set, rerun async reconnect
-		go ac.reconnectConn()
+	closeReason, open := <-connClose
+	if !open {
+		log.Debugf("AMQP connection closed with reason: %v", closeReason)
+		return
 	}
+	cb := breaker.New(3, 1, 5*time.Second)
+	var hasReconnected = false
+	for !hasReconnected {
+		result := cb.Run(func() (err error) {
+			err = ac.createAMQPConnection()
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+
+		switch result {
+		case nil:
+			log.Debug("AMQP connection reconnected")
+			hasReconnected = true
+		case breaker.ErrBreakerOpen:
+		default:
+		}
+	}
+	// New connections set, rerun async reconnect
+	go ac.reconnectConn()
 }
 
 //------------------------------------------------------------------------------
@@ -150,41 +149,39 @@ func (ac *AMQPConnection) Channel() (*AMQPChannel, error) {
 // Private method to handle channel reconnect on error / close / timeout
 func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 	chanClose := c.Channel.NotifyClose(make(chan *amqp.Error, 1))
-	select {
-	case closeReason, open := <-chanClose:
-		if !open || c.IsClosed() {
-			log.Debugf("AMQP channel closed with reason: %v", closeReason)
-			if err := c.Close(); err != nil {
-				log.WithError(err).Debug("AMQP close error")
-			}
-			break
+	closeReason, open := <-chanClose
+	if !open || c.IsClosed() {
+		log.Debugf("AMQP channel closed with reason: %v", closeReason)
+		if err := c.Close(); err != nil {
+			log.WithError(err).Debug("AMQP close error")
 		}
-		cb := breaker.New(3, 1, 5*time.Second)
-		var (
-			newChannel     *amqp.Channel
-			hasReconnected = false
-		)
-		for !hasReconnected {
-			result := cb.Run(func() (err error) {
-				newChannel, err = ac.Connection.Channel()
-				if err != nil {
-					return err
-				}
-				return nil
-			})
-
-			switch result {
-			case nil:
-				log.Debug("AMQP channel reconnected")
-				hasReconnected = true
-			case breaker.ErrBreakerOpen:
-			default:
-			}
-		}
-		c.Channel = newChannel
-		// New connections set, rerun async reconnect
-		go ac.reconnectChannel(c)
+		return
 	}
+	cb := breaker.New(3, 1, 5*time.Second)
+	var (
+		newChannel     *amqp.Channel
+		hasReconnected = false
+	)
+	for !hasReconnected {
+		result := cb.Run(func() (err error) {
+			newChannel, err = ac.Connection.Channel()
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+
+		switch result {
+		case nil:
+			log.Debug("AMQP channel reconnected")
+			hasReconnected = true
+		case breaker.ErrBreakerOpen:
+		default:
+		}
+	}
+	c.Channel = newChannel
+	// New connections set, rerun async reconnect
+	go ac.reconnectChannel(c)
 }
 
 // IsClosed change internal channel state

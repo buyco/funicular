@@ -43,15 +43,12 @@ func main() {
 		}()
 
 		go func() {
-			for {
-				select {
-				case filename := <-s3Chan:
-					_, err := redisCli.XDel(stream, filename).Result()
-					if err != nil {
-						log.Fatalf("Failed to delete stream message: %v", err)
-					}
-					log.Printf("File message stream deleted for ID: %s", filename)
+			for filename := range s3Chan{
+				_, err := redisCli.XDel(stream, filename).Result()
+				if err != nil {
+					log.Fatalf("Failed to delete stream message: %v", err)
 				}
+				log.Printf("File message stream deleted for ID: %s", filename)
 			}
 		}()
 		lastID := "$"
@@ -82,21 +79,18 @@ func main() {
 	}
 	awsManager := client.NewAWSManager(client.NewAWSSession(awsConfig))
 	s3Bucket := awsManager.S3Manager.Add(bucketName)
-	for {
-		select {
-		case fileData := <-fileChan:
-			result, err := s3Bucket.Upload(
-				storePath,
-				fileData.Values["filename"].(string),
-				strings.NewReader(fileData.Values["fileData"].(string)),
-				nil,
-			)
-			if err != nil {
-				log.Printf("Failed to upload file, %v", err)
-			} else {
-				log.Printf("File uploaded to, %s\n", aws.StringValue(&result))
-				s3Chan <- fileData.ID
-			}
+	for fileData := range fileChan{
+		result, err := s3Bucket.Upload(
+			storePath,
+			fileData.Values["filename"].(string),
+			strings.NewReader(fileData.Values["fileData"].(string)),
+			nil,
+		)
+		if err != nil {
+			log.Printf("Failed to upload file, %v", err)
+		} else {
+			log.Printf("File uploaded to, %s\n", aws.StringValue(&result))
+			s3Chan <- fileData.ID
 		}
 	}
 }

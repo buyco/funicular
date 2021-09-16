@@ -51,8 +51,6 @@ func NewSFTPClient(sshClient *ssh.Client) (*sftp.Client, error) {
 type SFTPManager struct {
 	host      string
 	port      uint32
-	user      string
-	password  string
 	pool      *syncPkg.Pool
 	sshConfig *ssh.ClientConfig
 }
