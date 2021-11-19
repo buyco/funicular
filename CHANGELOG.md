@@ -1,6 +1,13 @@
 CHANGE LOG
 ===================
 
+# [v1.14.1](https://github.com/buyco/funicular/tree/v1.14.1)
+
+* Delete logger on common usage and create a tag on debug build (#25)
+* Update README on Makefile commands
+* Run linter and fix code (#24)
+* Edit Makefile, README and fix staticcheck command
+
 # [v1.14.0](https://github.com/buyco/funicular/tree/v1.14.0)
 
 * Add Makefile + linter + vet + bump to Go 1.17 (#23)
