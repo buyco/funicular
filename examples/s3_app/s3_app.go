@@ -43,7 +43,7 @@ func main() {
 		}()
 
 		go func() {
-			for filename := range s3Chan{
+			for filename := range s3Chan {
 				_, err := redisCli.XDel(stream, filename).Result()
 				if err != nil {
 					log.Fatalf("Failed to delete stream message: %v", err)
@@ -79,7 +79,7 @@ func main() {
 	}
 	awsManager := client.NewAWSManager(client.NewAWSSession(awsConfig))
 	s3Bucket := awsManager.S3Manager.Add(bucketName)
-	for fileData := range fileChan{
+	for fileData := range fileChan {
 		result, err := s3Bucket.Upload(
 			storePath,
 			fileData.Values["filename"].(string),

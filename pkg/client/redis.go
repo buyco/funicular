@@ -1,9 +1,8 @@
 package client
 
 import (
-	"github.com/buyco/keel/pkg/helper"
 	"github.com/go-redis/redis/v7"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 	"net"
 	"strconv"
 	"sync"
@@ -46,7 +45,7 @@ func (rw *RedisManager) AddClient(category string) (*redis.Client, error) {
 	rw.Lock()
 	defer rw.Unlock()
 	if category == "" {
-		return nil, helper.ErrorPrint("category must be filled")
+		return nil, errors.New("category must be filled")
 	}
 	client := redis.NewClient(rw.config.ToOption())
 	return rw.set(client, category), nil
@@ -69,11 +68,11 @@ func (rw *RedisManager) Close() error {
 		for _, redisClient := range rw.Clients {
 			err = redisClient.Close()
 			if err != nil {
-				return helper.ErrorPrintf("an error occurred while closing client connection pool: %v", err)
+				return errors.Errorf("an error occurred while closing client connection pool: %v", err)
 			}
 		}
 	} else {
-		err = helper.ErrorPrint("manager have no clients to close")
+		err = errors.New("manager have no clients to close")
 	}
 	return err
 }
@@ -83,7 +82,7 @@ func (rw *RedisManager) set(client *redis.Client, category string) *redis.Client
 	if content == nil {
 		rw.Clients[category] = client
 	} else {
-		log.Infof("Redis client already set for category [%s]", category)
+		debug("Redis client already set for category [%s]", category)
 	}
 	return rw.Clients[category]
 }

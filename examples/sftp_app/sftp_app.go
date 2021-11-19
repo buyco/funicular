@@ -95,7 +95,7 @@ func main() {
 		}
 	}()
 
-	for fileMap := range fileChan{
+	for fileMap := range fileChan {
 		fmt.Printf("Got file message chan: %v\n", fileMap["fileInfo"].(os.FileInfo).Name())
 
 		fByteData, err := ioutil.ReadAll(fileMap["fileHandler"].(*sftp.File))

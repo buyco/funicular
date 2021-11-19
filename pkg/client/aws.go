@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/buyco/keel/pkg/helper"
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 	"io"
 	"sync"
 	"time"
@@ -68,8 +69,8 @@ type UploadOptions struct {
 
 // AWSManager is a struct to manage AWS SDK
 type AWSManager struct {
-	session      *session.Session
-	S3Manager    *S3Manager
+	session   *session.Session
+	S3Manager *S3Manager
 }
 
 // NewAWSManager is AWSManager constructor
@@ -84,9 +85,9 @@ func NewAWSManager(session *session.Session) *AWSManager {
 
 // S3Manager is a struct to control S3 client
 type S3Manager struct {
-	client  *s3.S3
-	s3      map[string]StorageAccessLayer
-	mutex   sync.RWMutex
+	client *s3.S3
+	s3     map[string]StorageAccessLayer
+	mutex  sync.RWMutex
 }
 
 // NewS3Manager is a S3Manager constructor
@@ -197,7 +198,7 @@ func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader, optio
 // Generate a new copy of UploadInput filled with options
 func (s3w *S3Wrapper) mergeUploadOptions(s3Params *s3manager.UploadInput, options *UploadOptions) (*s3manager.UploadInput, error) {
 	if s3Params == nil {
-		return nil, helper.ErrorPrint("s3Params argument must be of type UploadInput")
+		return nil, errors.New("s3Params argument must be of type UploadInput")
 	}
 	var newS3Input s3manager.UploadInput
 	err := copier.Copy(&newS3Input, &s3Params)
@@ -277,7 +278,7 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt, o
 		return 0, err
 	}
 	if downParams.Validate() != nil {
-		return 0, helper.ErrorPrintf("download params malformed: %v", err)
+		return 0, errors.Errorf("download params malformed: %v", err)
 	}
 	result, err := s3w.downloader.Download(data, downParams)
 	return result, err
@@ -286,7 +287,7 @@ func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt, o
 // Generate a new copy of GetObjectInput filled with options
 func (s3w *S3Wrapper) mergeDownloadOptions(s3Params *s3.GetObjectInput, options *DownloadOptions) (*s3.GetObjectInput, error) {
 	if s3Params == nil {
-		return nil, helper.ErrorPrint("s3Params argument must be of type GetObjectInput")
+		return nil, errors.New("s3Params argument must be of type GetObjectInput")
 	}
 	var newS3Input s3.GetObjectInput
 	err := copier.Copy(&newS3Input, &s3Params)
@@ -347,7 +348,7 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 	}
 	err := input.Validate()
 	if err != nil {
-		return nil, helper.ErrorPrintf("delete params malformed: %v", err)
+		return nil, errors.Errorf("delete params malformed: %v", err)
 	}
 
 	result, err := s3w.deleter(input)
@@ -355,14 +356,14 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				return nil, helper.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
+				return nil, errors.New(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
 			case s3.ErrCodeNoSuchKey:
-				return nil, helper.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchKey, aerr.Error()))
+				return nil, errors.New(fmt.Sprint(s3.ErrCodeNoSuchKey, aerr.Error()))
 			default:
 				return nil, aerr
 			}
 		} else {
-			return nil, helper.ErrorPrint(aerr.Error())
+			return nil, errors.New(aerr.Error())
 		}
 	}
 	return result, err
@@ -380,7 +381,7 @@ func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListO
 	}
 	err := readParams.Validate()
 	if err != nil {
-		return nil, helper.ErrorPrintf("read params malformed: %v", err)
+		return nil, errors.Errorf("read params malformed: %v", err)
 	}
 
 	result, err := s3w.reader(readParams)
@@ -388,13 +389,13 @@ func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListO
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case s3.ErrCodeNoSuchBucket:
-				return nil, helper.ErrorPrint(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
+				return nil, errors.New(fmt.Sprint(s3.ErrCodeNoSuchBucket, aerr.Error()))
 
 			default:
 				return nil, aerr
 			}
 		} else {
-			return nil, helper.ErrorPrint(aerr.Error())
+			return nil, errors.New(aerr.Error())
 		}
 	}
 	return result, err

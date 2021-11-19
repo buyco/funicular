@@ -3,9 +3,8 @@ package client
 import (
 	"fmt"
 	syncPkg "github.com/buyco/funicular/pkg/sync"
-	"github.com/buyco/keel/pkg/helper"
+	"github.com/pkg/errors"
 	"github.com/pkg/sftp"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"sync"
@@ -29,20 +28,18 @@ func NewSSHClient(host string, port uint32, sshConfig *ssh.ClientConfig) (*ssh.C
 	conn, err := ssh.Dial("tcp", addr, sshConfig)
 
 	if err != nil {
-		err = helper.ErrorPrintf("unable to connect to [%s]: %v", addr, err)
-		return nil, err
+		return nil, errors.Errorf("unable to connect to [%s]: %v", addr, err)
 	}
-	return conn, err
+	return conn, nil
 }
 
 // NewSFTPClient is SFTP client constructor
 func NewSFTPClient(sshClient *ssh.Client) (*sftp.Client, error) {
 	client, err := sftp.NewClient(sshClient)
 	if err != nil {
-		err = helper.ErrorPrintf("unable to start sftp subsytem: %v", err)
-		return nil, err
+		return nil, errors.Errorf("unable to start sftp subsytem: %v", err)
 	}
-	return client, err
+	return client, nil
 }
 
 //------------------------------------------------------------------------------
@@ -80,7 +77,7 @@ func (sm *SFTPManager) AddClient() error {
 	go sm.reconnect(sftpStruct)
 	err = sm.pool.Put(sftpStruct)
 	if err != nil {
-		log.Warn(err)
+		debug("Error: %v", err)
 	}
 	return nil
 }
@@ -89,7 +86,7 @@ func (sm *SFTPManager) AddClient() error {
 func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 	sftpClient := sm.pool.Get()
 	if sftpClient == nil {
-		return nil, helper.ErrorPrint("no SFTP client available")
+		return nil, errors.New("no SFTP client available")
 	}
 	return sftpClient.(*SFTPWrapper), nil
 }
@@ -98,10 +95,10 @@ func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 func (sm *SFTPManager) PutClient(client *SFTPWrapper) {
 	err := sm.pool.Put(client)
 	if err != nil {
-		log.Warn(err)
-		err := client.Close()
+		debug("Error: %v", err)
+		err = client.Close()
 		if err != nil {
-			log.WithError(err).Warn("An error occurred while closing connection")
+			debug("%s -> %v", "An error occurred while closing connection", err)
 		}
 	}
 }
@@ -130,7 +127,7 @@ func (sm *SFTPManager) newConnections() (*ssh.Client, *sftp.Client, error) {
 		return nil, sftpConn, err
 	}
 
-	return sshConn, sftpConn, err
+	return sshConn, sftpConn, nil
 }
 
 // Private method to handle reconnect on error / close / timeout
@@ -144,16 +141,16 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 	case <-c.shutdown:
 		err := c.client.Close()
 		if err != nil {
-			log.Warnf("SFTP client cannot be closed: %v", err)
+			debug("SFTP client cannot be closed: %v", err)
 		}
 		err = c.connection.Close()
 		if err != nil {
-			log.Warnf("SSH session cannot be closed: %v", err)
+			debug("SSH session cannot be closed: %v", err)
 		}
 		break
 	case res := <-closed:
 		c.mutex.Lock()
-		log.Warnf("SFTP connection closed, reconnecting: %s", res)
+		debug("SFTP connection closed, reconnecting: %s", res)
 		// Force SSH close & wait connection even if already closed
 		c.connection.Close()
 		c.connection.Wait()
@@ -178,7 +175,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 				hasReconnected = true
 			case breaker.ErrBreakerOpen:
 			default:
-				log.Errorf("SFTP failed to reconnect: %v", result)
+				debug("SFTP failed to reconnect: %v", result)
 			}
 		}
 
@@ -187,7 +184,7 @@ func (sm *SFTPManager) reconnect(c *SFTPWrapper) {
 		c.closed = false
 		c.mutex.Unlock()
 		atomic.AddUint64(&c.Reconnects, 1)
-		log.Info("SFTP connection recovered")
+		debug("SFTP connection recovered")
 
 		// New connections set, rerun async reconnect
 		go sm.reconnect(c)
@@ -222,7 +219,7 @@ func (s *SFTPWrapper) Close() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	if s.closed {
-		return helper.ErrorPrint("SFTP connection was already closed")
+		return errors.New("SFTP connection was already closed")
 	}
 	s.shutdown <- true
 	s.client.Wait()

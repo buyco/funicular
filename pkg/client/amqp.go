@@ -2,8 +2,7 @@ package client
 
 import (
 	"fmt"
-	"github.com/buyco/keel/pkg/helper"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"sync"
@@ -81,7 +80,7 @@ func (ac *AMQPConnection) createAMQPConnection() (err error) {
 		connection, err = amqp.Dial(url)
 	}
 	if err != nil {
-		return helper.ErrorPrintf("unable to start AMQP subsystem: %v", err)
+		return errors.Errorf("unable to start AMQP subsystem: %v", err)
 	}
 	ac.Connection = connection
 	return nil
@@ -93,7 +92,7 @@ func (ac *AMQPConnection) reconnectConn() {
 
 	closeReason, open := <-connClose
 	if !open {
-		log.Debugf("AMQP connection closed with reason: %v", closeReason)
+		debug("AMQP connection closed with reason: %v", closeReason)
 		return
 	}
 	cb := breaker.New(3, 1, 5*time.Second)
@@ -109,7 +108,7 @@ func (ac *AMQPConnection) reconnectConn() {
 
 		switch result {
 		case nil:
-			log.Debug("AMQP connection reconnected")
+			debug("AMQP connection reconnected")
 			hasReconnected = true
 		case breaker.ErrBreakerOpen:
 		default:
@@ -151,9 +150,9 @@ func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 	chanClose := c.Channel.NotifyClose(make(chan *amqp.Error, 1))
 	closeReason, open := <-chanClose
 	if !open || c.IsClosed() {
-		log.Debugf("AMQP channel closed with reason: %v", closeReason)
+		debug("AMQP channel closed with reason: %v", closeReason)
 		if err := c.Close(); err != nil {
-			log.WithError(err).Debug("AMQP close error")
+			debug("%s -> %v", "AMQP close error", err)
 		}
 		return
 	}
@@ -173,7 +172,7 @@ func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 
 		switch result {
 		case nil:
-			log.Debug("AMQP channel reconnected")
+			debug("AMQP channel reconnected")
 			hasReconnected = true
 		case breaker.ErrBreakerOpen:
 		default:
