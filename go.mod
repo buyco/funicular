@@ -10,8 +10,8 @@ require (
 	github.com/jinzhu/copier v0.2.5
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
+	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.12.0
-	github.com/sirupsen/logrus v1.8.0
 	github.com/streadway/amqp v1.0.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	gopkg.in/eapache/go-resiliency.v1 v1.2.0
@@ -26,7 +26,7 @@ require (
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/magefile/mage v1.10.0 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sirupsen/logrus v1.8.0 // indirect
 	github.com/thoas/go-funk v0.5.0 // indirect
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect
 	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect

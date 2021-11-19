@@ -42,8 +42,8 @@ go-tidy:
 
 go-build:
 	@echo "  >  Building examples binaries..."
-	@GOBIN=$(GOBIN) go build $(LDFLAGS) examples/s3_app/s3_app.go
-	@GOBIN=$(GOBIN) go build $(LDFLAGS) examples/sftp_app/sftp_app.go
+	@GOBIN=$(GOBIN) go build -tags debug $(LDFLAGS) examples/s3_app/s3_app.go
+	@GOBIN=$(GOBIN) go build -tags debug $(LDFLAGS) examples/sftp_app/sftp_app.go
 
 .PHONY: help
 all: help
