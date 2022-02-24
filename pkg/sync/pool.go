@@ -1,7 +1,7 @@
 package sync
 
 import (
-	"github.com/buyco/keel/pkg/helper"
+	"golang.org/x/xerrors"
 	"time"
 )
 
@@ -59,6 +59,6 @@ func (p *Pool) Put(c interface{}) error {
 	case p.connections <- c:
 		return nil
 	default:
-		return helper.ErrorPrint("pool is full, element will not be added")
+		return xerrors.New("pool is full, element will not be added")
 	}
 }

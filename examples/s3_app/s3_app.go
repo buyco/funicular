@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/buyco/funicular/examples/internal/env"
 	"log"
 	"os"
 	"strconv"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/buyco/funicular/pkg/client"
-	"github.com/buyco/keel/pkg/helper"
 	"github.com/go-redis/redis/v7"
 )
 
@@ -19,7 +19,7 @@ const bucketName = "buyco-foo-bar"
 const storePath = "/foo/bar/"
 
 func main() {
-	helper.LoadEnvFile(os.Getenv("ENV"))
+	env.LoadEnvFile(os.Getenv("ENV"))
 	fileChan := make(chan redis.XMessage)
 	s3Chan := make(chan string)
 	go func() {

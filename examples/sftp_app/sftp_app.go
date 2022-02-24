@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/buyco/funicular/examples/internal/env"
 	"io/ioutil"
 	"log"
 	"os"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	"github.com/buyco/funicular/pkg/client"
-	"github.com/buyco/keel/pkg/helper"
 	"github.com/go-redis/redis/v7"
 	"github.com/pkg/sftp"
 )
@@ -20,7 +20,7 @@ const category = stream + "-cat"
 const sftpDir = "./foo/bar/"
 
 func main() {
-	helper.LoadEnvFile(os.Getenv("ENV"))
+	env.LoadEnvFile(os.Getenv("ENV"))
 
 	fileChan := make(chan map[string]interface{})
 	go func() {

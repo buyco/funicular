@@ -3,9 +3,9 @@ package client
 import (
 	"fmt"
 	syncPkg "github.com/buyco/funicular/pkg/sync"
-	"github.com/pkg/errors"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/xerrors"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"sync"
 	"sync/atomic"
@@ -28,7 +28,7 @@ func NewSSHClient(host string, port uint32, sshConfig *ssh.ClientConfig) (*ssh.C
 	conn, err := ssh.Dial("tcp", addr, sshConfig)
 
 	if err != nil {
-		return nil, errors.Errorf("unable to connect to [%s]: %v", addr, err)
+		return nil, xerrors.Errorf("unable to connect to [%s]: %v", addr, err)
 	}
 	return conn, nil
 }
@@ -37,7 +37,7 @@ func NewSSHClient(host string, port uint32, sshConfig *ssh.ClientConfig) (*ssh.C
 func NewSFTPClient(sshClient *ssh.Client) (*sftp.Client, error) {
 	client, err := sftp.NewClient(sshClient)
 	if err != nil {
-		return nil, errors.Errorf("unable to start sftp subsytem: %v", err)
+		return nil, xerrors.Errorf("unable to start sftp subsytem: %v", err)
 	}
 	return client, nil
 }
@@ -86,7 +86,7 @@ func (sm *SFTPManager) AddClient() error {
 func (sm *SFTPManager) GetClient() (*SFTPWrapper, error) {
 	sftpClient := sm.pool.Get()
 	if sftpClient == nil {
-		return nil, errors.New("no SFTP client available")
+		return nil, xerrors.New("no SFTP client available")
 	}
 	return sftpClient.(*SFTPWrapper), nil
 }
@@ -219,7 +219,7 @@ func (s *SFTPWrapper) Close() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	if s.closed {
-		return errors.New("SFTP connection was already closed")
+		return xerrors.New("SFTP connection was already closed")
 	}
 	s.shutdown <- true
 	s.client.Wait()

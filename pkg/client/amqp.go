@@ -2,8 +2,8 @@ package client
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
+	"golang.org/x/xerrors"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"sync"
 	"sync/atomic"
@@ -80,7 +80,7 @@ func (ac *AMQPConnection) createAMQPConnection() (err error) {
 		connection, err = amqp.Dial(url)
 	}
 	if err != nil {
-		return errors.Errorf("unable to start AMQP subsystem: %v", err)
+		return xerrors.Errorf("unable to start AMQP subsystem: %v", err)
 	}
 	ac.Connection = connection
 	return nil

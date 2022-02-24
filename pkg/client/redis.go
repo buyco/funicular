@@ -2,7 +2,7 @@ package client
 
 import (
 	"github.com/go-redis/redis/v7"
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 	"net"
 	"strconv"
 	"sync"
@@ -45,7 +45,7 @@ func (rw *RedisManager) AddClient(category string) (*redis.Client, error) {
 	rw.Lock()
 	defer rw.Unlock()
 	if category == "" {
-		return nil, errors.New("category must be filled")
+		return nil, xerrors.New("category must be filled")
 	}
 	client := redis.NewClient(rw.config.ToOption())
 	return rw.set(client, category), nil
@@ -68,11 +68,11 @@ func (rw *RedisManager) Close() error {
 		for _, redisClient := range rw.Clients {
 			err = redisClient.Close()
 			if err != nil {
-				return errors.Errorf("an error occurred while closing client connection pool: %v", err)
+				return xerrors.Errorf("an error occurred while closing client connection pool: %v", err)
 			}
 		}
 	} else {
-		err = errors.New("manager have no clients to close")
+		err = xerrors.New("manager have no clients to close")
 	}
 	return err
 }

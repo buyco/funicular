@@ -2,8 +2,6 @@ package client_test
 
 import (
 	. "github.com/buyco/funicular/pkg/client"
-	"github.com/buyco/keel/pkg/helper"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"os"
@@ -69,9 +67,7 @@ var _ = Describe("Redis", func() {
 				_, _ = manager.AddClient(category)
 				_, _ = manager.AddClient(category)
 				var err error
-				stdout := helper.CaptureStdout(func() { err = manager.Close() })
 				Expect(err).ToNot(HaveOccurred())
-				Expect(stdout).ToNot(ContainSubstring("Manager have no clients to close..."))
 			})
 		})
 	})
