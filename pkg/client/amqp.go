@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/xerrors"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"sync"
