@@ -1,3 +1,4 @@
+// Package env contains functions to handle env vars
 package env
 
 import (
