@@ -5,10 +5,6 @@
 
 Simple facades to create commands.
 
-## Important information
-
-This package use `retract` directive in `go.mod` file and is now only compatible with Go 1.16 from v1.0.0
-
 ## How to install Go ?
 
 #### Debian / Ubuntu:
