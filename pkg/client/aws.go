@@ -1,3 +1,4 @@
+// Package client contains struct for client third parties
 package client
 
 import (
@@ -42,7 +43,7 @@ type DownloadOptions struct {
 	ResponseContentLanguage    string
 	ResponseContentType        string
 	ResponseExpires            *time.Time
-	VersionId                  string
+	VersionID                  string
 }
 
 type UploadOptions struct {
@@ -326,8 +327,8 @@ func (s3w *S3Wrapper) mergeDownloadOptions(s3Params *s3.GetObjectInput, options 
 	if options.ResponseExpires != nil {
 		newS3Input.ResponseExpires = options.ResponseExpires
 	}
-	if len(options.VersionId) > 0 {
-		newS3Input.VersionId = aws.String(options.VersionId)
+	if len(options.VersionID) > 0 {
+		newS3Input.VersionId = aws.String(options.VersionID)
 	}
 	return &newS3Input, nil
 }

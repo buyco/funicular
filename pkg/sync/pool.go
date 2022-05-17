@@ -1,3 +1,4 @@
+// Package sync contains structs to extend sync stdlib
 package sync
 
 import (

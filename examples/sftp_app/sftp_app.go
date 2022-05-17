@@ -78,12 +78,12 @@ func main() {
 	}()
 
 	redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
-	redisDb, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+	redisDB, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
 	redisManager := client.NewRedisManager(
 		client.RedisConfig{
 			Host: os.Getenv("REDIS_HOST"),
 			Port: uint16(redisPort),
-			DB:   uint8(redisDb),
+			DB:   uint8(redisDB),
 		},
 	)
 	redisManager.AddClient(category)

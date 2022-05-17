@@ -1,3 +1,4 @@
+// Package client contains struct for client third parties
 package client
 
 import (

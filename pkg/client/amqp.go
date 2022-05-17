@@ -1,3 +1,4 @@
+// Package client contains struct for client third parties
 package client
 
 import (
@@ -21,7 +22,7 @@ func NewAMQPConfig(vhost string, channelMax int, heartbeat time.Duration) amqp.C
 
 //------------------------------------------------------------------------------
 
-// AMQPConnection is a struct to manage AMQP connections
+// AMQPConnectionConfig is a struct to manage AMQP connections
 type AMQPConnectionConfig struct {
 	host     string
 	port     int
