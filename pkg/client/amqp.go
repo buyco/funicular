@@ -2,10 +2,12 @@
 package client
 
 import (
+	"crypto/tls"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/xerrors"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
+	"net"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -19,8 +21,6 @@ func NewAMQPConfig(vhost string, channelMax int, heartbeat time.Duration) amqp.C
 		Heartbeat:  heartbeat,
 	}
 }
-
-//------------------------------------------------------------------------------
 
 // AMQPConnectionConfig is a struct to manage AMQP connections
 type AMQPConnectionConfig struct {
@@ -42,15 +42,26 @@ func NewAMQPConnectionConfig(host string, port int, user, password string, confi
 	}
 }
 
-// AMQPConnection is a struct to handle AMQP connection
-type AMQPConnection struct {
+// AMQPConnection is a client wrapper interface
+type AMQPConnection interface {
+	LocalAddr() net.Addr
+	ConnectionState() tls.ConnectionState
+	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
+	NotifyBlocked(receiver chan amqp.Blocking) chan amqp.Blocking
+	Close() error
+	IsClosed() bool
+	Channel() (AMQPChannel, error)
+}
+
+// amqpConnection is a struct to handle AMQP connection
+type amqpConnection struct {
 	*amqp.Connection
 	config *AMQPConnectionConfig
 }
 
 // NewAMQPConnection is AMQPConnection constructor
-func NewAMQPConnection(config *AMQPConnectionConfig) (*AMQPConnection, error) {
-	conn := &AMQPConnection{
+func NewAMQPConnection(config *AMQPConnectionConfig) (AMQPConnection, error) {
+	conn := &amqpConnection{
 		config: config,
 	}
 	err := conn.createAMQPConnection()
@@ -62,7 +73,7 @@ func NewAMQPConnection(config *AMQPConnectionConfig) (*AMQPConnection, error) {
 }
 
 // createAMQPConnection is AMQP connection setter
-func (ac *AMQPConnection) createAMQPConnection() (err error) {
+func (ac *amqpConnection) createAMQPConnection() (err error) {
 	var connection *amqp.Connection
 	url := fmt.Sprintf(
 		"%s://%s:%s@%s:%d/",
@@ -88,7 +99,7 @@ func (ac *AMQPConnection) createAMQPConnection() (err error) {
 }
 
 // Private method to handle connection reconnect on error / close / timeout
-func (ac *AMQPConnection) reconnectConn() {
+func (ac *amqpConnection) reconnectConn() {
 	connClose := ac.Connection.NotifyClose(make(chan *amqp.Error, 1))
 
 	closeReason, open := <-connClose
@@ -119,35 +130,18 @@ func (ac *AMQPConnection) reconnectConn() {
 	go ac.reconnectConn()
 }
 
-//------------------------------------------------------------------------------
-
-// AMQPChannel is AMQP chan wrapper struct
-type AMQPChannel struct {
-	sync.Mutex
-	*amqp.Channel
-	closed uint32
-}
-
-// NewAMQPChannel is wrapper for AMPQ channels constructor
-func NewAMQPChannel(channel *amqp.Channel) *AMQPChannel {
-	return &AMQPChannel{
-		Channel: channel,
-		closed:  0,
-	}
-}
-
-func (ac *AMQPConnection) Channel() (*AMQPChannel, error) {
+func (ac *amqpConnection) Channel() (AMQPChannel, error) {
 	ch, err := ac.Connection.Channel()
 	if err != nil {
 		return nil, err
 	}
-	wrapperChan := NewAMQPChannel(ch)
+	wrapperChan := newAMQPChannel(ch)
 	go ac.reconnectChannel(wrapperChan)
 	return wrapperChan, nil
 }
 
 // Private method to handle channel reconnect on error / close / timeout
-func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
+func (ac *amqpConnection) reconnectChannel(c *amqpChannel) {
 	chanClose := c.Channel.NotifyClose(make(chan *amqp.Error, 1))
 	closeReason, open := <-chanClose
 	if !open || c.IsClosed() {
@@ -184,13 +178,68 @@ func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 	go ac.reconnectChannel(c)
 }
 
+// AMQPChannel is an interface for amqp channel wrapper
+type AMQPChannel interface {
+	Close() error
+	IsClosed() bool
+	NotifyClose(c chan *amqp.Error) chan *amqp.Error
+	NotifyFlow(c chan bool) chan bool
+	NotifyReturn(c chan amqp.Return) chan amqp.Return
+	NotifyCancel(c chan string) chan string
+	NotifyConfirm(ack, nack chan uint64) (chan uint64, chan uint64)
+	NotifyPublish(confirm chan amqp.Confirmation) chan amqp.Confirmation
+	Qos(prefetchCount, prefetchSize int, global bool) error
+	Cancel(consumer string, noWait bool) error
+	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error)
+	QueueDeclarePassive(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error)
+	QueueInspect(name string) (amqp.Queue, error)
+	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
+	QueueUnbind(name, key, exchange string, args amqp.Table) error
+	QueuePurge(name string, noWait bool) (int, error)
+	QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error)
+	Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error)
+	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
+	ExchangeDeclarePassive(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
+	ExchangeDelete(name string, ifUnused, noWait bool) error
+	ExchangeBind(destination, key, source string, noWait bool, args amqp.Table) error
+	ExchangeUnbind(destination, key, source string, noWait bool, args amqp.Table) error
+	Publish(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error
+	PublishWithDeferredConfirm(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) (*amqp.DeferredConfirmation, error)
+	Get(queue string, autoAck bool) (msg amqp.Delivery, ok bool, err error)
+	Tx() error
+	TxCommit() error
+	TxRollback() error
+	Flow(active bool) error
+	Confirm(noWait bool) error
+	Recover(requeue bool) error
+	Ack(tag uint64, multiple bool) error
+	Nack(tag uint64, multiple bool, requeue bool) error
+	Reject(tag uint64, requeue bool) error
+	GetNextPublishSeqNo() uint64
+}
+
+// amqpChannel is AMQP chan wrapper struct
+type amqpChannel struct {
+	sync.Mutex
+	*amqp.Channel
+	closed uint32
+}
+
+// newAMQPChannel is wrapper for AMPQ channels constructor
+func newAMQPChannel(channel *amqp.Channel) *amqpChannel {
+	return &amqpChannel{
+		Channel: channel,
+		closed:  0,
+	}
+}
+
 // IsClosed change internal channel state
-func (ac *AMQPChannel) IsClosed() bool {
+func (ac *amqpChannel) IsClosed() bool {
 	return atomic.LoadUint32(&ac.closed) == 1
 }
 
 // Close closes running channel and change internal state
-func (ac *AMQPChannel) Close() error {
+func (ac *amqpChannel) Close() error {
 	if ac.IsClosed() {
 		return amqp.ErrClosed
 	}
