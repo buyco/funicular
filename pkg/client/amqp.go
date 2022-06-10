@@ -2,14 +2,26 @@
 package client
 
 import (
+	"crypto/tls"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/xerrors"
 	"gopkg.in/eapache/go-resiliency.v1/breaker"
+	"net"
 	"sync"
 	"sync/atomic"
 	"time"
 )
+
+type AMQPClient interface {
+	LocalAddr() net.Addr
+	ConnectionState() tls.ConnectionState
+	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
+	NotifyBlocked(receiver chan amqp.Blocking) chan amqp.Blocking
+	Close() error
+	IsClosed() bool
+	Channel() (*amqp.Channel, error)
+}
 
 // NewAMQPConfig is a simple AMQP Config constructor
 func NewAMQPConfig(vhost string, channelMax int, heartbeat time.Duration) amqp.Config {
@@ -19,8 +31,6 @@ func NewAMQPConfig(vhost string, channelMax int, heartbeat time.Duration) amqp.C
 		Heartbeat:  heartbeat,
 	}
 }
-
-//------------------------------------------------------------------------------
 
 // AMQPConnectionConfig is a struct to manage AMQP connections
 type AMQPConnectionConfig struct {
@@ -44,52 +54,92 @@ func NewAMQPConnectionConfig(host string, port int, user, password string, confi
 
 // AMQPConnection is a struct to handle AMQP connection
 type AMQPConnection struct {
-	*amqp.Connection
-	config *AMQPConnectionConfig
+	connection AMQPClient
+	config     *AMQPConnectionConfig
 }
 
-// NewAMQPConnection is AMQPConnection constructor
-func NewAMQPConnection(config *AMQPConnectionConfig) (*AMQPConnection, error) {
+type AMQPClientCreateFunc func() (AMQPClient, error)
+
+// NewAMQPConnection is AMQPConnection constructor without auto reconnect
+func NewAMQPConnection(client AMQPClient) (*AMQPConnection, error) {
 	conn := &AMQPConnection{
-		config: config,
+		connection: client,
 	}
-	err := conn.createAMQPConnection()
-	if err != nil {
-		return nil, err
-	}
-	go conn.reconnectConn()
+
 	return conn, nil
 }
 
-// createAMQPConnection is AMQP connection setter
-func (ac *AMQPConnection) createAMQPConnection() (err error) {
-	var connection *amqp.Connection
-	url := fmt.Sprintf(
-		"%s://%s:%s@%s:%d/",
-		"amqp",
-		ac.config.user,
-		ac.config.password,
-		ac.config.host,
-		ac.config.port,
-	)
-	if ac.config.config != nil {
-		connection, err = amqp.DialConfig(
-			url,
-			*ac.config.config,
-		)
-	} else {
-		connection, err = amqp.Dial(url)
-	}
+// NewAMQPConnectionWithReconnect is AMQPConnection constructor with auto reconnect
+func NewAMQPConnectionWithReconnect(clientFunc AMQPClientCreateFunc) (*AMQPConnection, error) {
+	amqpClient, err := clientFunc()
 	if err != nil {
-		return xerrors.Errorf("unable to start AMQP subsystem: %v", err)
+		return nil, err
 	}
-	ac.Connection = connection
-	return nil
+
+	conn := &AMQPConnection{
+		connection: amqpClient,
+	}
+
+	go conn.reconnectConn(clientFunc)
+	return conn, nil
+}
+
+// Dial is AMQP client connection
+func Dial(config *AMQPConnectionConfig) AMQPClientCreateFunc {
+	return func() (AMQPClient, error) {
+		var connection *amqp.Connection
+		var err error
+
+		url := fmt.Sprintf(
+			"%s://%s:%s@%s:%d/",
+			"amqp",
+			config.user,
+			config.password,
+			config.host,
+			config.port,
+		)
+		if config.config != nil {
+			connection, err = amqp.DialConfig(
+				url,
+				*config.config,
+			)
+		} else {
+			connection, err = amqp.Dial(url)
+		}
+		if err != nil {
+			return nil, xerrors.Errorf("unable to start AMQP subsystem: %v", err)
+		}
+		return connection, err
+	}
+}
+
+func (ac *AMQPConnection) LocalAddr() net.Addr {
+	return ac.connection.LocalAddr()
+}
+
+func (ac *AMQPConnection) ConnectionState() tls.ConnectionState {
+	return ac.connection.ConnectionState()
+}
+
+func (ac *AMQPConnection) NotifyClose(receiver chan *amqp.Error) chan *amqp.Error {
+	return ac.connection.NotifyClose(receiver)
+}
+
+func (ac *AMQPConnection) NotifyBlocked(receiver chan amqp.Blocking) chan amqp.Blocking {
+	return ac.connection.NotifyBlocked(receiver)
+}
+
+func (ac *AMQPConnection) Close() error {
+	return ac.connection.Close()
+}
+
+func (ac *AMQPConnection) IsClosed() bool {
+	return ac.connection.IsClosed()
 }
 
 // Private method to handle connection reconnect on error / close / timeout
-func (ac *AMQPConnection) reconnectConn() {
-	connClose := ac.Connection.NotifyClose(make(chan *amqp.Error, 1))
+func (ac *AMQPConnection) reconnectConn(reconnect AMQPClientCreateFunc) {
+	connClose := ac.connection.NotifyClose(make(chan *amqp.Error, 1))
 
 	closeReason, open := <-connClose
 	if !open {
@@ -100,10 +150,11 @@ func (ac *AMQPConnection) reconnectConn() {
 	var hasReconnected = false
 	for !hasReconnected {
 		result := cb.Run(func() (err error) {
-			err = ac.createAMQPConnection()
+			connection, err := reconnect()
 			if err != nil {
 				return err
 			}
+			ac.connection = connection
 			return nil
 		})
 
@@ -116,10 +167,10 @@ func (ac *AMQPConnection) reconnectConn() {
 		}
 	}
 	// New connections set, rerun async reconnect
-	go ac.reconnectConn()
+	go ac.reconnectConn(reconnect)
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 
 // AMQPChannel is AMQP chan wrapper struct
 type AMQPChannel struct {
@@ -137,7 +188,7 @@ func NewAMQPChannel(channel *amqp.Channel) *AMQPChannel {
 }
 
 func (ac *AMQPConnection) Channel() (*AMQPChannel, error) {
-	ch, err := ac.Connection.Channel()
+	ch, err := ac.connection.Channel()
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +215,7 @@ func (ac *AMQPConnection) reconnectChannel(c *AMQPChannel) {
 	)
 	for !hasReconnected {
 		result := cb.Run(func() (err error) {
-			newChannel, err = ac.Connection.Channel()
+			newChannel, err = ac.connection.Channel()
 			if err != nil {
 				return err
 			}

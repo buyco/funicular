@@ -12,7 +12,7 @@ var _ = Describe("AMQP", func() {
 		config := NewAMQPConnectionConfig("localhost", 5672, "guest", "guest", nil)
 		BeforeEach(func() {
 			var err error
-			manager, err = NewAMQPConnection(config)
+			manager, err = NewAMQPConnection(Dial(config))
 			Expect(err).ToNot(HaveOccurred())
 		})
 
