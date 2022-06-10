@@ -1,6 +1,12 @@
 CHANGE LOG
 ===================
 
+# [v1.14.2](https://github.com/buyco/funicular/tree/v1.14.2)
+
+* Fix CI and edit staticcheck checks (#28)
+* Move AMQP client from streadway/amqp to rabbitmq/amqp091-go (#26)
+* Migrate errors package to xerrors
+
 # [v1.14.1](https://github.com/buyco/funicular/tree/v1.14.1)
 
 * Delete logger on common usage and create a tag on debug build (#25)
