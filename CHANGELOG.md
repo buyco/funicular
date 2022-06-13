@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.15.1](https://github.com/buyco/funicular/tree/v1.15.1)
+
+* Fix go vet error on CI
+
 # [v1.15.0](https://github.com/buyco/funicular/tree/v1.15.0)
 
 * Change AMQP client interface to make it mockable (#30)
