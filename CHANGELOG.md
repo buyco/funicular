@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.15.0](https://github.com/buyco/funicular/tree/v1.15.0)
+
+* Change AMQP client interface to make it mockable (#30)
+
 # [v1.14.2](https://github.com/buyco/funicular/tree/v1.14.2)
 
 * Fix CI and edit staticcheck checks (#28)
