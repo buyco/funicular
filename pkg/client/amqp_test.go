@@ -25,7 +25,7 @@ var _ = Describe("AMQP", func() {
 			})
 
 			It("returns a new channel", func() {
-				Expect(manager.Channel()).To(BeAssignableToTypeOf(&AMQPChannel{}))
+				Expect(manager.Channel()).To(BeAssignableToTypeOf(&amqpChannel{}))
 			})
 
 		})
@@ -66,13 +66,13 @@ var _ = Describe("AMQP", func() {
 
 		Describe("Channel", func() {
 			var (
-				channel *AMQPChannel
+				channel AMQPChannel
 				err     error
 			)
 			BeforeEach(func() {
 				channel, err = manager.Channel()
 				Expect(err).ToNot(HaveOccurred())
-				Expect(channel).To(BeAssignableToTypeOf(&AMQPChannel{}))
+				Expect(channel).To(BeAssignableToTypeOf(&amqpChannel{}))
 			})
 
 			Describe("IsClosed", func() {
