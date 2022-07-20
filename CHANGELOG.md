@@ -1,6 +1,10 @@
 CHANGE LOG
 ===================
 
+# [v1.15.2](https://github.com/buyco/funicular/tree/v1.15.2)
+
+* Upgrade dependencies (#31)
+
 # [v1.15.1](https://github.com/buyco/funicular/tree/v1.15.1)
 
 * Fix go vet error on CI
