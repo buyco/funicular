@@ -3,9 +3,9 @@ package client_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	. "github.com/buyco/funicular/pkg/client"
@@ -44,7 +44,7 @@ var _ = Describe("SFTP", func() {
 			log.Fatal("failed to accept incoming connection", err)
 		}
 
-		privateBytes, err := ioutil.ReadFile("fixture/id_rsa_sftp")
+		privateBytes, err := os.ReadFile("fixture/id_rsa_sftp")
 		if err != nil {
 			log.Fatal("Failed to load private key", err)
 		}

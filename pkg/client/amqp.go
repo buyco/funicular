@@ -4,17 +4,18 @@ package client
 import (
 	"crypto/tls"
 	"fmt"
-	amqp "github.com/rabbitmq/amqp091-go"
-	"golang.org/x/xerrors"
-	"gopkg.in/eapache/go-resiliency.v1/breaker"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+	"golang.org/x/xerrors"
+	"gopkg.in/eapache/go-resiliency.v1/breaker"
 )
 
 // NewAMQPConfig is a simple AMQP Config constructor
-func NewAMQPConfig(vhost string, channelMax int, heartbeat time.Duration) amqp.Config {
+func NewAMQPConfig(vhost string, channelMax uint16, heartbeat time.Duration) amqp.Config {
 	return amqp.Config{
 		Vhost:      vhost,
 		ChannelMax: channelMax,
