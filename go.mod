@@ -8,13 +8,13 @@ retract v1.11.0
 require (
 	github.com/aws/aws-sdk-go v1.55.7
 	github.com/go-redis/redis/v7 v7.4.1
-	github.com/golang/mock v1.6.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.37.0
 	github.com/pkg/sftp v1.13.9
 	github.com/rabbitmq/amqp091-go v1.10.0
+	go.uber.org/mock v0.5.2
 	golang.org/x/crypto v0.38.0
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 	gopkg.in/eapache/go-resiliency.v1 v1.2.0
