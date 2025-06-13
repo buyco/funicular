@@ -1,18 +1,20 @@
 package client_test
 
 import (
-	"github.com/buyco/funicular/internal/mock"
-	. "github.com/buyco/funicular/pkg/client"
 	"io"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/awstesting/mock"
-	"github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	mock_clients "github.com/buyco/funicular/internal/mock"
+	. "github.com/buyco/funicular/pkg/client"
+
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/awstesting/mock"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("AWS", func() {
@@ -118,15 +120,15 @@ var _ = Describe("AWS", func() {
 			})
 
 			It("does not fail to call uploader", func() {
-				mockS3.EXPECT().Upload("test-path", "test-file", strings.NewReader("test-data"))
-				_, respErr := mockS3.Upload("test-path", "test-file", strings.NewReader("test-data"))
+				mockS3.EXPECT().Upload("test-path", "test-file", strings.NewReader("test-data"), nil)
+				_, respErr := mockS3.Upload("test-path", "test-file", strings.NewReader("test-data"), nil)
 				Expect(respErr).ToNot(HaveOccurred())
 			})
 
 			It("does not fail to call downloader", func() {
 				var buffer io.WriterAt
-				mockS3.EXPECT().Download("test-path", "test-file", buffer)
-				_, respErr := mockS3.Download("test-path", "test-file", buffer)
+				mockS3.EXPECT().Download("test-path", "test-file", buffer, nil)
+				_, respErr := mockS3.Download("test-path", "test-file", buffer, nil)
 				Expect(respErr).ToNot(HaveOccurred())
 			})
 

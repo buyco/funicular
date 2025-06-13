@@ -2,10 +2,11 @@ package client
 
 import (
 	"crypto/tls"
+	"net"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"net"
 )
 
 var _ = Describe("AMQP", func() {

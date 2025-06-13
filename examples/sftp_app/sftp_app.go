@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/buyco/funicular/examples/internal/env"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/buyco/funicular/examples/internal/env"
 
 	"github.com/buyco/funicular/pkg/client"
 	"github.com/go-redis/redis/v7"
@@ -98,7 +99,7 @@ func main() {
 	for fileMap := range fileChan {
 		fmt.Printf("Got file message chan: %v\n", fileMap["fileInfo"].(os.FileInfo).Name())
 
-		fByteData, err := ioutil.ReadAll(fileMap["fileHandler"].(*sftp.File))
+		fByteData, err := io.ReadAll(fileMap["fileHandler"].(*sftp.File))
 		if err != nil {
 			log.Printf("Cannot read file data %s #%v", fileMap["fileInfo"].(os.FileInfo).Name(), err)
 		} else {
