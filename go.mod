@@ -6,7 +6,7 @@ go 1.25
 retract v1.11.0
 
 require (
-	github.com/aws/aws-sdk-go v1.55.8
+	github.com/aws/aws-sdk-go v1.55.7
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/jinzhu/copier v0.4.0
 	github.com/joho/godotenv v1.5.1
