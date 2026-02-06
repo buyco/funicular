@@ -12,7 +12,7 @@ jobs:
       ## this will contain a matrix of all of the combinations
       ## we wish to test again:
       matrix:
-        go-version: [ '1.24' ]
+        go-version: ['1.24', '1.25']
         platform: [ ubuntu-latest ]
 
     ## Defines the platform for each test run
@@ -23,7 +23,7 @@ jobs:
     steps:
       ## sets up redis with streams supported
       - name: Run Redis service
-        uses: supercharge/redis-github-action@1.8.0
+        uses: supercharge/redis-github-action@1.8
         with:
           redis-version: 5
 
@@ -34,11 +34,11 @@ jobs:
 
       ## checks out our code locally so we can work with the files
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       ## sets up go based on the version
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
 

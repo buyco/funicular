@@ -27,6 +27,11 @@ vet:
 	@echo "  >  Running go vet..."
 	go vet ./...
 
+mod-outdated:
+	@echo "  > Looking for outdated dependencies..."
+	@GOBIN=$(GOBIN) go install -mod=mod github.com/psampaz/go-mod-outdated@latest
+	@go list -u -m -mod=mod -json all | $(GOBIN)/go-mod-outdated -update -direct
+
 go-test:
 	@echo "  >  Run tests..."
 	@GOBIN=$(GOBIN) go install github.com/onsi/ginkgo/ginkgo@v1.16.4
