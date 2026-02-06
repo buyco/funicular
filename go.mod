@@ -1,6 +1,6 @@
 module github.com/buyco/funicular
 
-go 1.25
+go 1.24
 
 // This version is in fact v0.11.0 tag
 retract v1.11.0
