@@ -25,7 +25,7 @@ jobs:
           RABBITMQ_DEFAULT_USER: guest
           RABBITMQ_DEFAULT_PASS: guest
         ports:
-          - 5672
+          - '5672:5672'
 
     ## the steps that will be run through for each version and platform
     ## combination
