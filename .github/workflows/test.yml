@@ -30,40 +30,27 @@ jobs:
     ## the steps that will be run through for each version and platform
     ## combination
     steps:
-      ## sets up redis with streams supported
       - name: Run Redis service
         uses: supercharge/redis-github-action@1.8.1
         with:
           redis-version: 5
-
-      ## checks out our code locally so we can work with the files
       - name: Checkout code
         uses: actions/checkout@v6
-
-      ## sets up go based on the version
       - name: Install Go
         uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
-
-      ## run go vet
       - name: Run vet
         run: make vet
-
-      ## run linter
       - name: Run linter
         run: make lint
-
-      ## run tests
       - name: Run tests
         env:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
           REDIS_DB: 1
         run: make test
-
-      ## post run
-      - name: Send result code coverage
-        run: |
-          bash tools/codecov/format_coverage.sh
-          bash <(curl -s https://codecov.io/bash) || echo "codecov send failed"
+      - name: Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
