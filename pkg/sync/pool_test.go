@@ -2,7 +2,7 @@ package sync_test
 
 import (
 	"github.com/buyco/funicular/pkg/sync"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
