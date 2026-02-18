@@ -1,11 +1,12 @@
 package client_test
 
 import (
-	. "github.com/buyco/funicular/pkg/client"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"os"
 	"strconv"
+
+	. "github.com/buyco/funicular/pkg/client"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Redis", func() {

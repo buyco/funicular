@@ -15,7 +15,7 @@ import (
 	reflect "reflect"
 
 	client "github.com/buyco/funicular/pkg/client"
-	amqp091_go "github.com/rabbitmq/amqp091-go"
+	amqp091 "github.com/rabbitmq/amqp091-go"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -115,10 +115,10 @@ func (mr *MockAMQPConnectionMockRecorder) LocalAddr() *gomock.Call {
 }
 
 // NotifyBlocked mocks base method.
-func (m *MockAMQPConnection) NotifyBlocked(receiver chan amqp091_go.Blocking) chan amqp091_go.Blocking {
+func (m *MockAMQPConnection) NotifyBlocked(receiver chan amqp091.Blocking) chan amqp091.Blocking {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NotifyBlocked", receiver)
-	ret0, _ := ret[0].(chan amqp091_go.Blocking)
+	ret0, _ := ret[0].(chan amqp091.Blocking)
 	return ret0
 }
 
@@ -129,10 +129,10 @@ func (mr *MockAMQPConnectionMockRecorder) NotifyBlocked(receiver any) *gomock.Ca
 }
 
 // NotifyClose mocks base method.
-func (m *MockAMQPConnection) NotifyClose(receiver chan *amqp091_go.Error) chan *amqp091_go.Error {
+func (m *MockAMQPConnection) NotifyClose(receiver chan *amqp091.Error) chan *amqp091.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NotifyClose", receiver)
-	ret0, _ := ret[0].(chan *amqp091_go.Error)
+	ret0, _ := ret[0].(chan *amqp091.Error)
 	return ret0
 }
 
@@ -223,10 +223,10 @@ func (mr *MockAMQPChannelMockRecorder) Confirm(noWait any) *gomock.Call {
 }
 
 // Consume mocks base method.
-func (m *MockAMQPChannel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp091_go.Table) (<-chan amqp091_go.Delivery, error) {
+func (m *MockAMQPChannel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp091.Table) (<-chan amqp091.Delivery, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Consume", queue, consumer, autoAck, exclusive, noLocal, noWait, args)
-	ret0, _ := ret[0].(<-chan amqp091_go.Delivery)
+	ret0, _ := ret[0].(<-chan amqp091.Delivery)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -238,7 +238,7 @@ func (mr *MockAMQPChannelMockRecorder) Consume(queue, consumer, autoAck, exclusi
 }
 
 // ExchangeBind mocks base method.
-func (m *MockAMQPChannel) ExchangeBind(destination, key, source string, noWait bool, args amqp091_go.Table) error {
+func (m *MockAMQPChannel) ExchangeBind(destination, key, source string, noWait bool, args amqp091.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExchangeBind", destination, key, source, noWait, args)
 	ret0, _ := ret[0].(error)
@@ -252,7 +252,7 @@ func (mr *MockAMQPChannelMockRecorder) ExchangeBind(destination, key, source, no
 }
 
 // ExchangeDeclare mocks base method.
-func (m *MockAMQPChannel) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp091_go.Table) error {
+func (m *MockAMQPChannel) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp091.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExchangeDeclare", name, kind, durable, autoDelete, internal, noWait, args)
 	ret0, _ := ret[0].(error)
@@ -266,7 +266,7 @@ func (mr *MockAMQPChannelMockRecorder) ExchangeDeclare(name, kind, durable, auto
 }
 
 // ExchangeDeclarePassive mocks base method.
-func (m *MockAMQPChannel) ExchangeDeclarePassive(name, kind string, durable, autoDelete, internal, noWait bool, args amqp091_go.Table) error {
+func (m *MockAMQPChannel) ExchangeDeclarePassive(name, kind string, durable, autoDelete, internal, noWait bool, args amqp091.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExchangeDeclarePassive", name, kind, durable, autoDelete, internal, noWait, args)
 	ret0, _ := ret[0].(error)
@@ -294,7 +294,7 @@ func (mr *MockAMQPChannelMockRecorder) ExchangeDelete(name, ifUnused, noWait any
 }
 
 // ExchangeUnbind mocks base method.
-func (m *MockAMQPChannel) ExchangeUnbind(destination, key, source string, noWait bool, args amqp091_go.Table) error {
+func (m *MockAMQPChannel) ExchangeUnbind(destination, key, source string, noWait bool, args amqp091.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExchangeUnbind", destination, key, source, noWait, args)
 	ret0, _ := ret[0].(error)
@@ -322,10 +322,10 @@ func (mr *MockAMQPChannelMockRecorder) Flow(active any) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockAMQPChannel) Get(queue string, autoAck bool) (amqp091_go.Delivery, bool, error) {
+func (m *MockAMQPChannel) Get(queue string, autoAck bool) (amqp091.Delivery, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", queue, autoAck)
-	ret0, _ := ret[0].(amqp091_go.Delivery)
+	ret0, _ := ret[0].(amqp091.Delivery)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -394,10 +394,10 @@ func (mr *MockAMQPChannelMockRecorder) NotifyCancel(c any) *gomock.Call {
 }
 
 // NotifyClose mocks base method.
-func (m *MockAMQPChannel) NotifyClose(c chan *amqp091_go.Error) chan *amqp091_go.Error {
+func (m *MockAMQPChannel) NotifyClose(c chan *amqp091.Error) chan *amqp091.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NotifyClose", c)
-	ret0, _ := ret[0].(chan *amqp091_go.Error)
+	ret0, _ := ret[0].(chan *amqp091.Error)
 	return ret0
 }
 
@@ -437,10 +437,10 @@ func (mr *MockAMQPChannelMockRecorder) NotifyFlow(c any) *gomock.Call {
 }
 
 // NotifyPublish mocks base method.
-func (m *MockAMQPChannel) NotifyPublish(confirm chan amqp091_go.Confirmation) chan amqp091_go.Confirmation {
+func (m *MockAMQPChannel) NotifyPublish(confirm chan amqp091.Confirmation) chan amqp091.Confirmation {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NotifyPublish", confirm)
-	ret0, _ := ret[0].(chan amqp091_go.Confirmation)
+	ret0, _ := ret[0].(chan amqp091.Confirmation)
 	return ret0
 }
 
@@ -451,10 +451,10 @@ func (mr *MockAMQPChannelMockRecorder) NotifyPublish(confirm any) *gomock.Call {
 }
 
 // NotifyReturn mocks base method.
-func (m *MockAMQPChannel) NotifyReturn(c chan amqp091_go.Return) chan amqp091_go.Return {
+func (m *MockAMQPChannel) NotifyReturn(c chan amqp091.Return) chan amqp091.Return {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NotifyReturn", c)
-	ret0, _ := ret[0].(chan amqp091_go.Return)
+	ret0, _ := ret[0].(chan amqp091.Return)
 	return ret0
 }
 
@@ -465,7 +465,7 @@ func (mr *MockAMQPChannelMockRecorder) NotifyReturn(c any) *gomock.Call {
 }
 
 // Publish mocks base method.
-func (m *MockAMQPChannel) Publish(exchange, key string, mandatory, immediate bool, msg amqp091_go.Publishing) error {
+func (m *MockAMQPChannel) Publish(exchange, key string, mandatory, immediate bool, msg amqp091.Publishing) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Publish", exchange, key, mandatory, immediate, msg)
 	ret0, _ := ret[0].(error)
@@ -479,10 +479,10 @@ func (mr *MockAMQPChannelMockRecorder) Publish(exchange, key, mandatory, immedia
 }
 
 // PublishWithDeferredConfirm mocks base method.
-func (m *MockAMQPChannel) PublishWithDeferredConfirm(exchange, key string, mandatory, immediate bool, msg amqp091_go.Publishing) (*amqp091_go.DeferredConfirmation, error) {
+func (m *MockAMQPChannel) PublishWithDeferredConfirm(exchange, key string, mandatory, immediate bool, msg amqp091.Publishing) (*amqp091.DeferredConfirmation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishWithDeferredConfirm", exchange, key, mandatory, immediate, msg)
-	ret0, _ := ret[0].(*amqp091_go.DeferredConfirmation)
+	ret0, _ := ret[0].(*amqp091.DeferredConfirmation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -508,7 +508,7 @@ func (mr *MockAMQPChannelMockRecorder) Qos(prefetchCount, prefetchSize, global a
 }
 
 // QueueBind mocks base method.
-func (m *MockAMQPChannel) QueueBind(name, key, exchange string, noWait bool, args amqp091_go.Table) error {
+func (m *MockAMQPChannel) QueueBind(name, key, exchange string, noWait bool, args amqp091.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueBind", name, key, exchange, noWait, args)
 	ret0, _ := ret[0].(error)
@@ -522,10 +522,10 @@ func (mr *MockAMQPChannelMockRecorder) QueueBind(name, key, exchange, noWait, ar
 }
 
 // QueueDeclare mocks base method.
-func (m *MockAMQPChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp091_go.Table) (amqp091_go.Queue, error) {
+func (m *MockAMQPChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp091.Table) (amqp091.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueDeclare", name, durable, autoDelete, exclusive, noWait, args)
-	ret0, _ := ret[0].(amqp091_go.Queue)
+	ret0, _ := ret[0].(amqp091.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -537,10 +537,10 @@ func (mr *MockAMQPChannelMockRecorder) QueueDeclare(name, durable, autoDelete, e
 }
 
 // QueueDeclarePassive mocks base method.
-func (m *MockAMQPChannel) QueueDeclarePassive(name string, durable, autoDelete, exclusive, noWait bool, args amqp091_go.Table) (amqp091_go.Queue, error) {
+func (m *MockAMQPChannel) QueueDeclarePassive(name string, durable, autoDelete, exclusive, noWait bool, args amqp091.Table) (amqp091.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueDeclarePassive", name, durable, autoDelete, exclusive, noWait, args)
-	ret0, _ := ret[0].(amqp091_go.Queue)
+	ret0, _ := ret[0].(amqp091.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -567,10 +567,10 @@ func (mr *MockAMQPChannelMockRecorder) QueueDelete(name, ifUnused, ifEmpty, noWa
 }
 
 // QueueInspect mocks base method.
-func (m *MockAMQPChannel) QueueInspect(name string) (amqp091_go.Queue, error) {
+func (m *MockAMQPChannel) QueueInspect(name string) (amqp091.Queue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueInspect", name)
-	ret0, _ := ret[0].(amqp091_go.Queue)
+	ret0, _ := ret[0].(amqp091.Queue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -597,7 +597,7 @@ func (mr *MockAMQPChannelMockRecorder) QueuePurge(name, noWait any) *gomock.Call
 }
 
 // QueueUnbind mocks base method.
-func (m *MockAMQPChannel) QueueUnbind(name, key, exchange string, args amqp091_go.Table) error {
+func (m *MockAMQPChannel) QueueUnbind(name, key, exchange string, args amqp091.Table) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUnbind", name, key, exchange, args)
 	ret0, _ := ret[0].(error)
