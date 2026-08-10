@@ -177,8 +177,8 @@ func NewS3Wrapper(bucketName string, s3Client *s3.S3) *S3Wrapper {
 func (s3w *S3Wrapper) Upload(path string, filename string, data io.Reader, options *UploadOptions) (string, error) {
 	upParams, err := s3w.mergeUploadOptions(
 		&s3manager.UploadInput{
-			Bucket: aws.String(s3w.bucketName),
-			Key:    aws.String(path + filename),
+			Bucket: new(s3w.bucketName),
+			Key:    new(path + filename),
 			Body:   data,
 		},
 		options,
@@ -209,58 +209,58 @@ func (s3w *S3Wrapper) mergeUploadOptions(s3Params *s3manager.UploadInput, option
 		return &newS3Input, nil
 	}
 	if len(options.ContentType) > 0 {
-		newS3Input.ContentType = aws.String(options.ContentType)
+		newS3Input.ContentType = new(options.ContentType)
 	}
 	if options.Expires != nil {
 		newS3Input.Expires = options.Expires
 	}
 	if len(options.ACL) > 0 {
-		newS3Input.ACL = aws.String(options.ACL)
+		newS3Input.ACL = new(options.ACL)
 	}
 	if options.ObjectLockRetainUntilDate != nil {
 		newS3Input.ObjectLockRetainUntilDate = options.ObjectLockRetainUntilDate
 	}
 	if len(options.CacheControl) > 0 {
-		newS3Input.CacheControl = aws.String(options.CacheControl)
+		newS3Input.CacheControl = new(options.CacheControl)
 	}
 	if len(options.ContentDisposition) > 0 {
-		newS3Input.ContentDisposition = aws.String(options.ContentDisposition)
+		newS3Input.ContentDisposition = new(options.ContentDisposition)
 	}
 	if len(options.ContentEncoding) > 0 {
-		newS3Input.ContentEncoding = aws.String(options.ContentEncoding)
+		newS3Input.ContentEncoding = new(options.ContentEncoding)
 	}
 	if len(options.ContentLanguage) > 0 {
-		newS3Input.ContentLanguage = aws.String(options.ContentLanguage)
+		newS3Input.ContentLanguage = new(options.ContentLanguage)
 	}
 	if len(options.ContentMD5) > 0 {
-		newS3Input.ContentMD5 = aws.String(options.ContentMD5)
+		newS3Input.ContentMD5 = new(options.ContentMD5)
 	}
 	if len(options.GrantFullControl) > 0 {
-		newS3Input.GrantFullControl = aws.String(options.GrantFullControl)
+		newS3Input.GrantFullControl = new(options.GrantFullControl)
 	}
 	if len(options.GrantRead) > 0 {
-		newS3Input.GrantRead = aws.String(options.GrantRead)
+		newS3Input.GrantRead = new(options.GrantRead)
 	}
 	if len(options.GrantReadACP) > 0 {
-		newS3Input.GrantReadACP = aws.String(options.GrantReadACP)
+		newS3Input.GrantReadACP = new(options.GrantReadACP)
 	}
 	if len(options.Metadata) > 0 {
 		newS3Input.Metadata = aws.StringMap(options.Metadata)
 	}
 	if len(options.GrantWriteACP) > 0 {
-		newS3Input.GrantWriteACP = aws.String(options.GrantWriteACP)
+		newS3Input.GrantWriteACP = new(options.GrantWriteACP)
 	}
 	if len(options.ObjectLockMode) > 0 {
-		newS3Input.ObjectLockMode = aws.String(options.ObjectLockMode)
+		newS3Input.ObjectLockMode = new(options.ObjectLockMode)
 	}
 	if len(options.ServerSideEncryption) > 0 {
-		newS3Input.ServerSideEncryption = aws.String(options.ServerSideEncryption)
+		newS3Input.ServerSideEncryption = new(options.ServerSideEncryption)
 	}
 	if len(options.StorageClass) > 0 {
-		newS3Input.StorageClass = aws.String(options.StorageClass)
+		newS3Input.StorageClass = new(options.StorageClass)
 	}
 	if len(options.Tagging) > 0 {
-		newS3Input.Tagging = aws.String(options.Tagging)
+		newS3Input.Tagging = new(options.Tagging)
 	}
 	return &newS3Input, nil
 }
@@ -269,8 +269,8 @@ func (s3w *S3Wrapper) mergeUploadOptions(s3Params *s3manager.UploadInput, option
 func (s3w *S3Wrapper) Download(path string, filename string, data io.WriterAt, options *DownloadOptions) (int64, error) {
 	downParams, err := s3w.mergeDownloadOptions(
 		&s3.GetObjectInput{
-			Bucket: aws.String(s3w.bucketName),
-			Key:    aws.String(path + filename),
+			Bucket: new(s3w.bucketName),
+			Key:    new(path + filename),
 		},
 		options,
 	)
@@ -298,37 +298,37 @@ func (s3w *S3Wrapper) mergeDownloadOptions(s3Params *s3.GetObjectInput, options 
 		return &newS3Input, nil
 	}
 	if len(options.IfMatch) > 0 {
-		newS3Input.IfMatch = aws.String(options.IfMatch)
+		newS3Input.IfMatch = new(options.IfMatch)
 	}
 	if options.IfModifiedSince != nil {
 		newS3Input.IfModifiedSince = options.IfModifiedSince
 	}
 	if len(options.IfNoneMatch) > 0 {
-		newS3Input.IfNoneMatch = aws.String(options.IfNoneMatch)
+		newS3Input.IfNoneMatch = new(options.IfNoneMatch)
 	}
 	if options.IfUnmodifiedSince != nil {
 		newS3Input.IfUnmodifiedSince = options.IfUnmodifiedSince
 	}
 	if len(options.ResponseCacheControl) > 0 {
-		newS3Input.ResponseCacheControl = aws.String(options.ResponseCacheControl)
+		newS3Input.ResponseCacheControl = new(options.ResponseCacheControl)
 	}
 	if len(options.ResponseContentDisposition) > 0 {
-		newS3Input.ResponseContentDisposition = aws.String(options.ResponseContentDisposition)
+		newS3Input.ResponseContentDisposition = new(options.ResponseContentDisposition)
 	}
 	if len(options.ResponseContentEncoding) > 0 {
-		newS3Input.ResponseContentEncoding = aws.String(options.ResponseContentEncoding)
+		newS3Input.ResponseContentEncoding = new(options.ResponseContentEncoding)
 	}
 	if len(options.ResponseContentLanguage) > 0 {
-		newS3Input.ResponseContentLanguage = aws.String(options.ResponseContentLanguage)
+		newS3Input.ResponseContentLanguage = new(options.ResponseContentLanguage)
 	}
 	if len(options.ResponseContentType) > 0 {
-		newS3Input.ResponseContentType = aws.String(options.ResponseContentType)
+		newS3Input.ResponseContentType = new(options.ResponseContentType)
 	}
 	if options.ResponseExpires != nil {
 		newS3Input.ResponseExpires = options.ResponseExpires
 	}
 	if len(options.VersionID) > 0 {
-		newS3Input.VersionId = aws.String(options.VersionID)
+		newS3Input.VersionId = new(options.VersionID)
 	}
 	return &newS3Input, nil
 }
@@ -337,13 +337,13 @@ func (s3w *S3Wrapper) mergeDownloadOptions(s3Params *s3.GetObjectInput, options 
 func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjectsOutput, error) {
 	var objects []*s3.ObjectIdentifier
 	for _, file := range filename {
-		objects = append(objects, &s3.ObjectIdentifier{Key: aws.String(path + file)})
+		objects = append(objects, &s3.ObjectIdentifier{Key: new(path + file)})
 	}
 	input := &s3.DeleteObjectsInput{
-		Bucket: aws.String(s3w.bucketName),
+		Bucket: new(s3w.bucketName),
 		Delete: &s3.Delete{
 			Objects: objects,
-			Quiet:   aws.Bool(false),
+			Quiet:   new(false),
 		},
 	}
 	err := input.Validate()
@@ -372,9 +372,9 @@ func (s3w *S3Wrapper) Delete(path string, filename ...string) (*s3.DeleteObjects
 // Read gets file content from S3
 func (s3w *S3Wrapper) Read(path string, limit int64, readFrom string) (*s3.ListObjectsV2Output, error) {
 	readParams := &s3.ListObjectsV2Input{
-		Bucket:  aws.String(s3w.bucketName),
-		Prefix:  aws.String(path),
-		MaxKeys: aws.Int64(limit),
+		Bucket:  new(s3w.bucketName),
+		Prefix:  new(path),
+		MaxKeys: new(limit),
 	}
 	if readFrom != "" {
 		readParams.SetStartAfter(readFrom)

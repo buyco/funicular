@@ -8,18 +8,18 @@ import (
 
 // Pool holds Clients
 type Pool struct {
-	connections chan interface{}
+	connections chan any
 	capacity    uint
 	factory     Factory
 }
 
 // Factory is a function to create new connections
-type Factory func() interface{}
+type Factory func() any
 
 // NewPool creates a new pool of interface.
 func NewPool(maxCap uint, factory Factory) *Pool {
 	return &Pool{
-		connections: make(chan interface{}, maxCap),
+		connections: make(chan any, maxCap),
 		capacity:    maxCap,
 		factory:     factory,
 	}
@@ -35,7 +35,7 @@ func (p *Pool) GetCapacity() uint {
 	return p.capacity
 }
 
-func (p *Pool) Get() (rv interface{}) {
+func (p *Pool) Get() (rv any) {
 	// Try to grab an available connection within 1ms
 	select {
 	case rv := <-p.connections:
@@ -55,7 +55,7 @@ func (p *Pool) Get() (rv interface{}) {
 	}
 }
 
-func (p *Pool) Put(c interface{}) error {
+func (p *Pool) Put(c any) error {
 	select {
 	case p.connections <- c:
 		return nil

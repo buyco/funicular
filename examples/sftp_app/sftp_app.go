@@ -23,7 +23,7 @@ const sftpDir = "./foo/bar/"
 func main() {
 	env.LoadEnvFile(os.Getenv("ENV"))
 
-	fileChan := make(chan map[string]interface{})
+	fileChan := make(chan map[string]any)
 	go func() {
 		var port uint32
 		if portInt, err := strconv.Atoi(os.Getenv("SFTP_PORT")); err == nil {
@@ -68,7 +68,7 @@ func main() {
 						if err != nil {
 							log.Printf("Cannot read file %s #%v", file.Name(), err)
 						} else {
-							fileChan <- map[string]interface{}{"fileInfo": file, "fileHandler": fHandler}
+							fileChan <- map[string]any{"fileInfo": file, "fileHandler": fHandler}
 						}
 					}
 				}
@@ -103,7 +103,7 @@ func main() {
 		if err != nil {
 			log.Printf("Cannot read file data %s #%v", fileMap["fileInfo"].(os.FileInfo).Name(), err)
 		} else {
-			msgData := map[string]interface{}{"filename": fileMap["fileInfo"].(os.FileInfo).Name(), "fileData": fByteData}
+			msgData := map[string]any{"filename": fileMap["fileInfo"].(os.FileInfo).Name(), "fileData": fByteData}
 
 			_, err = redisCli.XAdd(
 				&redis.XAddArgs{

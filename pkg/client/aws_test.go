@@ -26,8 +26,8 @@ var _ = Describe("AWS", func() {
 	defer server.Close()
 
 	var awsConfig = &aws.Config{
-		DisableSSL: aws.Bool(true),
-		Endpoint:   aws.String(server.URL),
+		DisableSSL: new(true),
+		Endpoint:   new(server.URL),
 	}
 	var awsSession = NewAWSSession(awsConfig)
 

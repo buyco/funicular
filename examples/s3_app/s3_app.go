@@ -75,7 +75,7 @@ func main() {
 		}
 	}()
 	var awsConfig = &aws.Config{
-		MaxRetries: aws.Int(2),
+		MaxRetries: new(2),
 	}
 	awsManager := client.NewAWSManager(client.NewAWSSession(awsConfig))
 	s3Bucket := awsManager.S3Manager.Add(bucketName)

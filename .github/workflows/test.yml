@@ -12,7 +12,7 @@ jobs:
       ## this will contain a matrix of all of the combinations
       ## we wish to test again:
       matrix:
-        go-version: ['1.25']
+        go-version: ['1.26']
         platform: [ ubuntu-latest ]
 
     ## Defines the platform for each test run
@@ -35,9 +35,9 @@ jobs:
         with:
           redis-version: 5
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go-version }}
       - name: Run vet
@@ -51,6 +51,6 @@ jobs:
           REDIS_DB: 1
         run: make test
       - name: Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
