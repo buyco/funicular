@@ -37,7 +37,7 @@ var _ = Describe("Pool", func() {
 	})
 
 	It("sets factory", func() {
-		pool.SetFactory(func() interface{} { return "bar" })
+		pool.SetFactory(func() any { return "bar" })
 		Expect(pool.Get()).To(Equal("bar"))
 	})
 })
